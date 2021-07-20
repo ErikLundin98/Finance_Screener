@@ -1,0 +1,1 @@
+Contains scripts to help with connecting and loggin in to the databaes
