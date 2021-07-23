@@ -27,6 +27,7 @@ def get_connectors(host, user, password, database):
     return cursor, connection
 
 
+
 def insert_row(connection:Any, cursor:Any, table_name:str, columns:tuple, tuple:Any):
     '''
     Insert single row into a specified table
@@ -46,10 +47,39 @@ def insert_row(connection:Any, cursor:Any, table_name:str, columns:tuple, tuple:
     
     connection.commit()
 
-def insert_rows(connection:Any, table_name:str, columns:tuple, data:Any):
+def insert_rows(connection:Any, cursor:Any, table_name:str, columns:tuple, data:Any, ignore_duplicates=False, index_keys=None):
+    '''
+    Insert many into a specified table
+
+    Keyword arguments:
+    connection: database connection
+    cursor: cursor object
+    table_name: the name of the table to insert to
+    data: the data to insert. A tuple
+    '''
+
+    sql = sql_string = 'INSERT INTO '+ table_name +'('+ ', '.join(columns) +') VALUES (' + ', '.join(['%s']*len(columns)) + ')'
+    if ignore_duplicates:
+        if index_keys:
+            unique_attrs = ', '.join(index_keys)
+        else:
+            unique_attrs = ''
+        
+        sql += ' ON CONFLICT({}) DO NOTHING'.format(unique_attrs)
+    sql += ';'
+    for row in data:
+        try:
+            cursor.execute(sql, row)
+        except (Exception, psycopg2.Error) as error:
+            print(error.pgerror)
+
+    
+    connection.commit()
+
+def insert_rows_copy(connection:Any, table_name:str, columns, data:Any):
     '''
     Insert multiple rows into a specified table.
-    Optimized for many inserts
+    Optimized for many inserts, BUT: does not handle duplicates
     
     Keyword arguments:
     connection: database connection

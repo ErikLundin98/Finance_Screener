@@ -1,3 +1,4 @@
+from pandas.io.pytables import performance_doc
 from requests.api import get
 import yfinance as yf
 import pandas as pd
@@ -30,10 +31,12 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
     colnames[colnames.index('adj close')] = 'adjusted_close'
     processed_df.columns = colnames
     processed_df.sort_values(by='date', inplace=True) # sort by date
-    return processed_df
+    processed_df['date'] = processed_df['date'].apply(lambda x : x.date())
+    return processed_df.values, list(processed_df.columns)
 
 
 if __name__ == '__main__':
     # test case
-    data = get_daily_data_from_tickers(['AAPL', 'NVDA'], '2021-07-01', '2021-07-22')
+    data, colnames = get_daily_data_from_tickers(['AAPL', 'NVDA'], '2021-07-01', '2021-07-22')
     print(data)
+    print(len(data.values[0]))

@@ -16,13 +16,12 @@ CREATE TABLE daily(
     ticker varchar(8),
     open FLOAT(6),
     close FLOAT(6),
-    adjusted_close FLOAT(6)
+    adjusted_close FLOAT(6),
     high FLOAT(6),
     low FLOAT(6),
     volume INT,
     FOREIGN KEY(ticker) REFERENCES USED_STOCKS(ticker)
 );
 
-
 /*TimescaleDB hypertable*/
-SELECT create_hypertable('DAILY', 'date');
+SELECT create_hypertable('daily', 'date');
