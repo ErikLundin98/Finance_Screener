@@ -5,6 +5,7 @@ from typing import Any
 import psycopg2
 import pgcopy
 from datetime import datetime
+from tqdm import tqdm
 
 def str_to_date(datestr: str, format='%Y-%m-%d') -> Any:
     return datetime.strptime(datestr, format).date()
@@ -47,7 +48,7 @@ def insert_row(connection:Any, cursor:Any, table_name:str, columns:tuple, tuple:
     
     connection.commit()
 
-def insert_rows(connection:Any, cursor:Any, table_name:str, columns:tuple, data:Any, ignore_duplicates=False, index_keys=None):
+def insert_rows(connection:Any, cursor:Any, table_name:str, columns:tuple, data:Any, do_on_conflict='DO NOTHING'):
     '''
     Insert many into a specified table
 
@@ -59,15 +60,9 @@ def insert_rows(connection:Any, cursor:Any, table_name:str, columns:tuple, data:
     '''
 
     sql = sql_string = 'INSERT INTO '+ table_name +'('+ ', '.join(columns) +') VALUES (' + ', '.join(['%s']*len(columns)) + ')'
-    if ignore_duplicates:
-        if index_keys:
-            unique_attrs = ', '.join(index_keys)
-        else:
-            unique_attrs = ''
-        
-        sql += ' ON CONFLICT({}) DO NOTHING'.format(unique_attrs)
+    sql += ' ON CONFLICT '+do_on_conflict
     sql += ';'
-    for row in data:
+    for i, row in enumerate(tqdm(data)):
         try:
             cursor.execute(sql, row)
         except (Exception, psycopg2.Error) as error:

@@ -33,17 +33,16 @@ print(cursor.fetchone())
 
 
 
-daily_data, colnames = mdata.get_daily_data_from_tickers(['AAPL', 'NVDA'], '2021-06-01', '2021-07-22')
+daily_data, colnames = mdata.get_daily_data_from_tickers(['AAPL', 'NVDA'], '2020-01-01', '2021-07-22')
 
 dbu.insert_rows(connection=connection, 
                 cursor=cursor, 
                 table_name='daily', 
                 columns=colnames, 
                 data=daily_data, 
-                ignore_duplicates=True, 
-                index_keys=('date', 'ticker'))
+                )
 
-cursor.execute('SELECT * FROM DAILY')
+cursor.execute('SELECT * FROM daily;')
 print(cursor.fetchone())
 
 cursor.close()

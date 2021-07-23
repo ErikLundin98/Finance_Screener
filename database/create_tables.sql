@@ -23,5 +23,7 @@ CREATE TABLE daily(
     FOREIGN KEY(ticker) REFERENCES USED_STOCKS(ticker)
 );
 
+CREATE UNIQUE INDEX ON daily(date, ticker);
+
 /*TimescaleDB hypertable*/
 SELECT create_hypertable('daily', 'date');

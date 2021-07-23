@@ -25,18 +25,19 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
             processed_df = pd.concat([processed_df, df], axis=0) # concat dataframes
 
 
-    processed_df.reset_index(level=0, inplace=True)
+    processed_df.reset_index(level=0, inplace=True) # move date from index to column
+    processed_df.fillna(0, inplace=True) # replace NA:s with 0's
     colnames = list(processed_df.columns)
     colnames = [colname.lower() for colname in colnames] # colnames to lower case
     colnames[colnames.index('adj close')] = 'adjusted_close'
     processed_df.columns = colnames
     processed_df.sort_values(by='date', inplace=True) # sort by date
     processed_df['date'] = processed_df['date'].apply(lambda x : x.date())
+    processed_df['volume'] = processed_df['volume'].astype('int64')
     return processed_df.values, list(processed_df.columns)
 
 
 if __name__ == '__main__':
     # test case
-    data, colnames = get_daily_data_from_tickers(['AAPL', 'NVDA'], '2021-07-01', '2021-07-22')
+    data, colnames = get_daily_data_from_tickers(['AAPL', 'NVDA'], '2000-01-01', '2021-07-22')
     print(data)
-    print(len(data.values[0]))
