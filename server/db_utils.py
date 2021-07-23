@@ -60,3 +60,4 @@ def insert_rows(connection:Any, table_name:str, columns:tuple, data:Any):
     copy_manager = pgcopy.CopyManager(connection, table_name, columns)
     copy_manager.copy(data)
     connection.commit()
+

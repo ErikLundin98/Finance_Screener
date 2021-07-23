@@ -14,12 +14,15 @@ CREATE TABLE used_stocks(
 CREATE TABLE daily(
     date DATE NOT NULL,
     ticker varchar(8),
-    open FLOAT(2),
-    close FLOAT(2),
-    high FLOAT(2),
-    low FLOAT(2),
+    open FLOAT(6),
+    close FLOAT(6),
+    adjusted_close FLOAT(6)
+    high FLOAT(6),
+    low FLOAT(6),
     volume INT,
     FOREIGN KEY(ticker) REFERENCES USED_STOCKS(ticker)
 );
+
+
 /*TimescaleDB hypertable*/
 SELECT create_hypertable('DAILY', 'date');
