@@ -15,14 +15,19 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
         group_by='ticker'
     )
     # returns a multi-indexed pandas dataframe that needs to be processed!
-    processed_df = pd.DataFrame()
-    for i, ticker in enumerate(tickers):
-        df = data[ticker]
-        df['ticker'] = ticker # add ticker value as column
-        if i == 0:
-            processed_df = df
-        else:
-            processed_df = pd.concat([processed_df, df], axis=0) # concat dataframes
+    if isinstance(data.index, pd.MultiIndex):
+        processed_df = pd.DataFrame()
+        for i, ticker in enumerate(tickers):
+            df = data[ticker]
+            df['ticker'] = ticker # add ticker value as column
+            if i == 0:
+                processed_df = df
+            else:
+                processed_df = pd.concat([processed_df, df], axis=0) # concat dataframes
+    else: # if only one ticker is used
+        processed_df = data
+        print(processed_df.head())
+        processed_df['ticker'] = tickers[0]
 
 
     processed_df.reset_index(level=0, inplace=True) # move date from index to column
