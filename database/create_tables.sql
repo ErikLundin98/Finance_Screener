@@ -1,4 +1,3 @@
-DROP VIEW IF EXISTS used_dates;
 DROP TABLE IF EXISTS used_tickers CASCADE;
 DROP TABLE IF EXISTS daily CASCADE;
 
@@ -28,5 +27,3 @@ CREATE UNIQUE INDEX ON daily(date, ticker);
 
 /*TimescaleDB hypertable*/
 SELECT create_hypertable('daily', 'date');
-/*Shows the latest updated dates (lazy check)*/
-CREATE VIEW used_dates AS SELECT ticker, MIN(date) as "first_date", MAX(date) AS "last_date" FROM daily GROUP BY ticker ORDER BY ticker ASC;
