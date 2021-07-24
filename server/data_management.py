@@ -22,9 +22,10 @@ class DataManager:
                                                             database=self.DATABASE_NAME)
 
     def add_ticker(self, ticker:str, name:str):
-        dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name'), (ticker, name))
-        # we also want to populate daily with data for the new ticker
-        self.add_daily_data([ticker], self.START_DATE, datetime.today().date())
+        if ticker not in self.get_tickers():
+            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name'), (ticker, name))
+            # we also want to populate daily with data for the new ticker
+            self.add_daily_data([ticker], self.START_DATE, datetime.today().date())
 
     def data_query(self, query:str) -> Any:
         self.cursor.execute(query)
