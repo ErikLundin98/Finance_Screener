@@ -1,8 +1,8 @@
-DROP VIEW IF EXISTS used_dates;
+DROP MATERIALIZED VIEW IF EXISTS used_dates;
 DROP MATERIALIZED VIEW IF EXISTS daily_returns;
 DROP MATERIALIZED VIEW IF EXISTS clean_daily;
 /*Shows the latest updated dates (lazy check)*/
-CREATE VIEW used_dates AS SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" FROM daily GROUP BY ticker ORDER BY ticker ASC;
+CREATE MATERIALIZED VIEW used_dates AS SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" FROM daily GROUP BY ticker ORDER BY ticker ASC;
 
 /*Cleaned up version of the daily-table by replacing blanks with the price from the previous day*/
 CREATE MATERIALIZED VIEW clean_daily AS

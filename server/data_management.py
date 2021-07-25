@@ -4,6 +4,8 @@ import market_data as mdata
 from dotenv import load_dotenv
 import os
 from datetime import date, datetime
+import pandas as pd
+import pandas.io.sql as pdsqlio
 
 class DataManager:
     def __init__(self):
@@ -51,6 +53,9 @@ class DataManager:
         end_date = datetime.now().date()
         print(tickers, start_date, end_date)
         self.add_daily_data(tickers, start_date, end_date)
+
+    def query_df(self, query:str) -> pd.DataFrame:
+        return pdsqlio.read_sql_query(query, self.connection)
 
     def __del__(self):
         self.cursor.close()
