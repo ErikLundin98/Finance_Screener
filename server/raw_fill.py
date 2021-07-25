@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from data_management import DataManager
+from server_utils.data_management import DataManager
 
 dm = DataManager()
 

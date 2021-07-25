@@ -8,7 +8,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
 import pandas as pd
-from data_management import DataManager
+from server_utils.data_management import DataManager
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 

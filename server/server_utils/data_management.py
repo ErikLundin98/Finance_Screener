@@ -23,11 +23,16 @@ class DataManager:
                                                             password=self.SQL_PASSWORD, 
                                                             database=self.DATABASE_NAME)
 
-    def add_ticker(self, ticker:str, name:str, currency:str = 'USD'):
+    def add_ticker(self, ticker:str, name:str, category:str = 'stock', currency:str = 'USD', refresh_views:bool = True):
         if ticker not in self.get_tickers():
-            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name', 'currency'), (ticker, name, currency))
+            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name', 'category', 'currency'), (ticker, name, category, currency))
             # we also want to populate daily with data for the new ticker
+            print('fetching data and adding to db')
             self.add_daily_data([ticker], self.START_DATE, datetime.today().date())
+            if refresh_views:
+                print('refreshing views...')
+                self.data_query('CALL refresh_views();')
+            print('done')
 
     def add_user(self, user_name:str, birth_year:Any, favorite_quote:str=''):
         if not favorite_quote:
@@ -37,10 +42,11 @@ class DataManager:
     def add_to_portfolio(self, user_name:str, tickers:list, amounts:list):
         data = [(user_name, ticker, amount) for ticker, amount in zip(tickers, amounts)]
         dbu.insert_rows(self.connection, self.cursor, 'portfolios', ('user_name', 'ticker', 'amount'), data)
-        
-    def data_query(self, query:str) -> Any:
+
+    def data_query(self, query:str, get_output=True) -> Any:
         self.cursor.execute(query)
-        return self.cursor.fetchall()
+        if get_output:
+            return self.cursor.fetchall()
 
     def get_tickers(self):
         return [tuple[0] for tuple in self.data_query('SELECT ticker FROM used_tickers;')]

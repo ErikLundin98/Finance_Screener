@@ -7,7 +7,8 @@ DROP TABLE IF EXISTS daily CASCADE;
 CREATE TABLE used_tickers(
     ticker varchar(16) PRIMARY KEY,
     company_name varchar(30),
-    currency varchar(3)
+    category varchar(20),
+    currency varchar(3),
 );
 
 /*Table that contains the main datasource*/
@@ -20,7 +21,7 @@ CREATE TABLE daily(
     adjusted_close FLOAT(6),
     high FLOAT(6),
     low FLOAT(6),
-    volume INT,
+    volume BIGINT,
     FOREIGN KEY(ticker) REFERENCES used_tickers(ticker)
 );
 
