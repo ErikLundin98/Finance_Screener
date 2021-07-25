@@ -1,12 +1,22 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from server_utils.data_management import DataManager
 
 app = Flask(__name__)
-data_manager = DataManager()
+#data_manager = DataManager()
 
 @app.route('/')
-def base():
-    return 'hello world!'
+def index():
+    return render_template('index.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    if request.method=='POST':
+        print('logged in!')
+        return index()
+
+@app.route('/hello')
+def hello():
+    return render_template('hello.html')
 
 @app.route('/post/ticker/<string:ticker>,<string:name>')
 def new_ticker(ticker, name):
