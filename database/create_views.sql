@@ -33,7 +33,7 @@ SELECT
     END
     AS "arithmetic return",
     CASE WHEN div = 0 THEN 0
-    ELSE LOG(div)
+    ELSE LN(div)
     END
     AS "logarithmic_return"
 FROM temp
