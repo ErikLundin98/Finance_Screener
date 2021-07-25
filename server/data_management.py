@@ -29,6 +29,15 @@ class DataManager:
             # we also want to populate daily with data for the new ticker
             self.add_daily_data([ticker], self.START_DATE, datetime.today().date())
 
+    def add_user(self, user_name:str, birth_year:Any, favorite_quote:str=''):
+        if not favorite_quote:
+            favorite_quote = ''
+        dbu.insert_row(self.connection, self.cursor, 'investors', ('user_name', 'birth_date', 'favorite_quote'), (user_name, birth_year, favorite_quote))
+
+    def add_to_portfolio(self, user_name:str, tickers:list, amounts:list):
+        data = [(user_name, ticker, amount) for ticker, amount in zip(tickers, amounts)]
+        dbu.insert_rows(self.connection, self.cursor, 'portfolios', ('user_name', 'ticker', 'amount'), data)
+        
     def data_query(self, query:str) -> Any:
         self.cursor.execute(query)
         return self.cursor.fetchall()

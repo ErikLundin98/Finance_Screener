@@ -28,3 +28,19 @@ CREATE UNIQUE INDEX ON daily(date, ticker);
 
 /*TimescaleDB hypertable*/
 SELECT create_hypertable('daily', 'date');
+
+/*Table with investors*/
+CREATE TABLE investors(
+    user_name VARCHAR(30) NOT NULL PRIMARY KEY,
+    birth_date DATE,
+    favorite_quote VARCHAR(200)
+);
+/*Table with portfolios*/
+CREATE TABLE portfolios(
+    user_name VARCHAR(30),
+    ticker varchar(16),
+    amount INT,
+    FOREIGN KEY(user_name) REFERENCES investors(user_name),
+    FOREIGN KEY(ticker) REFERENCES used_tickers(ticker),
+    PRIMARY KEY(user_name, ticker)
+);
