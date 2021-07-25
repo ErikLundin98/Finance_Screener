@@ -6,7 +6,8 @@ DROP TABLE IF EXISTS daily CASCADE;
 
 CREATE TABLE used_tickers(
     ticker varchar(16) PRIMARY KEY,
-    company_name varchar(30)
+    company_name varchar(30),
+    currency varchar(3)
 );
 
 /*Table that contains the main datasource*/

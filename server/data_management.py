@@ -23,9 +23,9 @@ class DataManager:
                                                             password=self.SQL_PASSWORD, 
                                                             database=self.DATABASE_NAME)
 
-    def add_ticker(self, ticker:str, name:str):
+    def add_ticker(self, ticker:str, name:str, currency:str = 'USD'):
         if ticker not in self.get_tickers():
-            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name'), (ticker, name))
+            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name', 'currency'), (ticker, name, currency))
             # we also want to populate daily with data for the new ticker
             self.add_daily_data([ticker], self.START_DATE, datetime.today().date())
 
