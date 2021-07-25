@@ -31,7 +31,7 @@ SELECT
     CASE WHEN div = 0 THEN 0
     ELSE div - 1
     END
-    AS "arithmetic return",
+    AS "arithmetic_return",
     CASE WHEN div = 0 THEN 0
     ELSE LN(div)
     END
