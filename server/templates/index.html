@@ -3,8 +3,13 @@
 <meta charset="UTF-8">
 <title>Page Title</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Bootstrap icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+<!-- Bootstrap -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<!-- Custom styles -->
 <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/index.css') }}">
+<!-- Jquery -->
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
@@ -13,8 +18,9 @@
 {% endblock %}
 
 <body>
-
+<!-- NAVBAR BEGIN -->
     <nav class="navbar navbar-expand-lg navbar-light navbar-style">
+        <h2 class="bi bi-globe"></h2>
         <a class="navbar-brand" href="#">FAtlas</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -26,20 +32,17 @@
               <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
+                <a class="nav-link" href="{{'/hello'}}"><i class="bi bi-currency-bitcoin"></i> Crypto</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{'/hello'}}">Hello!</a>
+              <a class="nav-link" href="{{'/prices'}}"><i class="bi bi-graph-up"></i> Stock</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{'/prices'}}">Prices</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{'/test'}}">Test</a>
+              <a class="nav-link" href="{{'/test'}}"><i class="bi bi-cash-coin"></i> Currency</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Dropdown
+                Help & Info
               </a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="#">Action</a>
@@ -48,18 +51,24 @@
                 <a class="dropdown-item" href="#">Something else here</a>
               </div>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{'/hello'}}"><i class="bi bi-briefcase-fill"></i> My Portfolio</a>
+          </li>
           </ul>
           <form action="{{'/login'}}" method="post" class="form-inline my-2 my-lg-0">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Login</button>
           </form>
+          
         </div>
       </nav>
-
+<!-- NAVBAR END -->
+<!-- MAIN CONTENT BEGIN -->
 <div id="main-content">
     {% block content %}
 
     {% endblock %}
 </div>
+<!-- MAIN CONTENT END -->
 </body>
 
 

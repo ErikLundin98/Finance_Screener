@@ -6,7 +6,7 @@ import json
 import pandas as pd
 
 app = Flask(__name__)
-dm = DataManager()
+#dm = DataManager()
 
 @app.route('/')
 def index():
