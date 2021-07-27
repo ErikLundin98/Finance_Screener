@@ -14,8 +14,9 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
         end=end,
         group_by='ticker'
     )
+    print(data.head())
     # returns a multi-indexed pandas dataframe that needs to be processed!
-    if isinstance(data.index, pd.MultiIndex):
+    if len(tickers) > 1:
         processed_df = pd.DataFrame()
         for i, ticker in enumerate(tickers):
             df = data[ticker]
@@ -26,7 +27,6 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
                 processed_df = pd.concat([processed_df, df], axis=0) # concat dataframes
     else: # if only one ticker is used
         processed_df = data
-        print(processed_df.head())
         processed_df['ticker'] = tickers[0]
 
 
@@ -45,4 +45,3 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
 if __name__ == '__main__':
     # test case
     data, colnames = get_daily_data_from_tickers(['AAPL', 'NVDA'], '2000-01-01', '2021-07-22')
-    print(data)

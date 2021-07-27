@@ -58,11 +58,11 @@ def insert_rows(connection:Any, cursor:Any, table_name:str, columns:tuple, data:
     table_name: the name of the table to insert to
     data: the data to insert. A tuple
     '''
-
     sql = sql_string = 'INSERT INTO '+ table_name +'('+ ', '.join(columns) +') VALUES (' + ', '.join(['%s']*len(columns)) + ')'
     sql += ' ON CONFLICT '+do_on_conflict
     sql += ';'
     for i, row in enumerate(tqdm(data)):
+        print(row)
         try:
             cursor.execute(sql, row)
         except (Exception, psycopg2.Error) as error:

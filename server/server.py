@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template
+from flask_login import LoginManager
 from server_utils.data_management import DataManager
 import plotly
 from plotly import express as px
@@ -6,7 +7,9 @@ import json
 import pandas as pd
 
 app = Flask(__name__)
-#dm = DataManager()
+dm = DataManager()
+lm = LoginManager()
+lm.init_app(app)
 
 @app.route('/')
 def index():
