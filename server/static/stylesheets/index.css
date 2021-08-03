@@ -1,3 +1,9 @@
 .navbar-style {
     background-color: lightcoral;
 }
+
+#main-content {
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-top: 2%;
+}

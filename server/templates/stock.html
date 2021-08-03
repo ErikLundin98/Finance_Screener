@@ -1,0 +1,35 @@
+{% extends "index.html" %}
+
+
+{% block content %}
+<h2>Market overview</h2>
+<div id="chart" class="chart"></div>
+
+<h3>Today's returns</h3>
+<div class="container">
+    <div class="row">
+      <div class="col">
+       <div id="table" class="chart"></div>
+      </div>
+      <div class="col">
+        Winners
+      </div>
+      <div class="col">
+        Losers
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block endscripts %}
+
+<script src="{{ url_for('static', filename='scripts/plotly.js') }}"></script>
+<script type="text/javascript">
+    var graphs = {{linegraphJSON | safe}};
+    Plotly.plot('chart',graphs,{}); 
+    var table = {{dailyreturntableJSON | safe}};
+    Plotly.plot('table',table,{});        
+</script>
+
+{% endblock %}

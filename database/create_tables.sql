@@ -11,6 +11,12 @@ CREATE TABLE used_tickers(
     currency varchar(3),
 );
 
+CREATE TABLE exchanges(
+    abbreviation varchar(10) PRIMARY KEY,
+    name varchar(40),
+    currency varchar(3)
+)
+
 /*Table that contains the main datasource*/
 
 CREATE TABLE daily(
@@ -24,6 +30,7 @@ CREATE TABLE daily(
     volume BIGINT,
     FOREIGN KEY(ticker) REFERENCES used_tickers(ticker)
 );
+
 
 CREATE UNIQUE INDEX ON daily(date, ticker);
 

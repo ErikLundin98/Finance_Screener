@@ -2,14 +2,14 @@ from flask import Flask, request, render_template
 from flask_login import LoginManager
 from server_utils.data_management import DataManager
 import plotly
-from plotly import express as px
+from plotly import express as px, graph_objects as go
 import json
 import pandas as pd
 
 app = Flask(__name__)
 dm = DataManager()
-lm = LoginManager()
-lm.init_app(app)
+#lm = LoginManager()
+#lm.init_app(app)
 
 @app.route('/')
 def index():
@@ -24,15 +24,34 @@ def login():
 def hello():
     return render_template('hello.html')
 
-@app.route('/prices')
+@app.route('/stock')
 def prices():
     print('querying df')
-    df = dm.query_df('SELECT ticker, date, adjusted_close FROM clean_daily')
-    fig = px.line(df, x='date', y='adjusted_close', color='ticker')
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    print('returning it')
-    print(df.head())
-    return render_template('prices_chart.html', graphJSON=graphJSON)
+    returns_df = dm.query_df('SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30')
+    fig = px.line(returns_df, x='date', y='arithmetic_return', color='ticker')
+    fig.update_layout(yaxis_tickformat='.001%')
+    
+    df = dm.query_df('SELECT ticker, arithmetic_return from daily_returns WHERE date = (SELECT MAX(date) FROM daily_returns)')
+    df['arithmetic_return'] = df['arithmetic_return'].astype(float).map("{:.2%}".format)
+    table = go.Figure(data=[go.Table(
+                        columnwidth=[7, 5],
+                        header=dict(values=['Stock', 'Daily return'],
+                                    fill_color='paleturquoise',
+                                    align='right'),
+                        cells=dict(values=[df.ticker, df.arithmetic_return],
+                                fill_color='lavender',
+                                align='right'))
+                    ])
+    returns_graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    today_returns_graphJSON = json.dumps(table, cls=plotly.utils.PlotlyJSONEncoder)
+    return render_template('stock.html', linegraphJSON=returns_graphJSON, dailyreturntableJSON=today_returns_graphJSON)
+
+
+@app.route('/update')
+def update_db():
+    dm.add_missing_daily_data()
+    print('updated data!')
+    return 200
 
 @app.route('/test')
 def test():
