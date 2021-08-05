@@ -25,13 +25,13 @@ The service will consist of these three standard-components:
 
 The client is the part that the user will interact with. It provides an interface that the user uses to send requests to the server using HTTP requests.
 
-Currently, the plan is to implement the front end using **React JS**
+Currently, the plan is to implement the front end using **standard HTML/CSS/JavaScript**
 
 ### Server
 
 The server serves the client to the user when the user makes their initial request and serves the client with data and information that the client wants. It servers the client with data by executing queries to the database. The server is also responsible for updating the database with new instrument data.
 
-The plan is to implement the server using **Django**, a Python web framework.
+The plan is to implement the server using **Flask**, a Python web framework.
 
 ### Database
 
