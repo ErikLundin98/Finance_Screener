@@ -8,6 +8,9 @@ from datetime import datetime
 from tqdm import tqdm
 
 def str_to_date(datestr: str, format='%Y-%m-%d') -> Any:
+    '''
+    Small helper function to convert a string to a datetime
+    '''
     return datetime.strptime(datestr, format).date()
 
 def get_connectors(host, user, password, database):

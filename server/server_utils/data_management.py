@@ -8,6 +8,9 @@ import pandas as pd
 import pandas.io.sql as pdsqlio
 
 class DataManager:
+    '''
+    Manager class to manage the finance screener database
+    '''
     def __init__(self):
         load_dotenv()
         self.SQL_UNAME = os.getenv('PGSQL_USERNAME')
@@ -24,6 +27,9 @@ class DataManager:
                                                             database=self.DATABASE_NAME)
 
     def add_ticker(self, ticker:str, name:str, category:str = 'stock', currency:str = 'USD', refresh_views:bool = True):
+        '''
+        Adds a ticker to the database, and populates the database with daily prices for that ticker
+        '''
         if ticker not in self.get_tickers():
             dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name', 'category', 'currency'), (ticker, name, category, currency))
             # we also want to populate daily with data for the new ticker
@@ -35,23 +41,40 @@ class DataManager:
             print('done')
 
     def add_user(self, user_name:str, birth_year:Any, favorite_quote:str=''):
+        '''
+        Adds a user to the database
+        '''
         if not favorite_quote:
             favorite_quote = ''
         dbu.insert_row(self.connection, self.cursor, 'investors', ('user_name', 'birth_date', 'favorite_quote'), (user_name, birth_year, favorite_quote))
 
     def add_to_portfolio(self, user_name:str, tickers:list, amounts:list):
+        '''
+        Function to update a user's portfolio
+        '''
         data = [(user_name, ticker, amount) for ticker, amount in zip(tickers, amounts)]
         dbu.insert_rows(self.connection, self.cursor, 'portfolios', ('user_name', 'ticker', 'amount'), data)
 
     def data_query(self, query:str, get_output=True) -> Any:
+        '''
+        Helper function to execute a query
+
+        get_output: Determines if output from query should be returned
+        '''
         self.cursor.execute(query)
         if get_output:
             return self.cursor.fetchall()
 
     def get_tickers(self):
+        '''
+        Helper function to get all tickers as a Python list
+        '''
         return [tuple[0] for tuple in self.data_query('SELECT ticker FROM used_tickers;')]
 
-    def add_daily_data(self, tickers, start_date, end_date, do_on_conflict='DO NOTHING'):
+    def add_daily_data(self, tickers:list, start_date, end_date, do_on_conflict='DO NOTHING'):
+        '''
+        Add daily data for a specific list of tickers and a start and end date
+        '''
         daily_data, colnames = mdata.get_daily_data_from_tickers(tickers, start_date, end_date)
 
         dbu.insert_rows(connection=self.connection, 
