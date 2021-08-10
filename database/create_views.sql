@@ -12,7 +12,7 @@ SELECT
         NULLIF(adjusted_close, 0),
         NULLIF(LAG(adjusted_close, 1) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
         NULLIF(LAG(adjusted_close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(adjusted_close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 9)
+        NULLIF(LAG(adjusted_close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
     )
     AS "adjusted_close"
 FROM daily
@@ -40,9 +40,7 @@ SELECT
 FROM temp
 ORDER BY DATE;
 
-/*
-Schedule a job that refreshes the view every hour
-*/
+
 DROP PROCEDURE IF EXISTS refresh_views;
 CREATE PROCEDURE refresh_views()
 LANGUAGE SQL
