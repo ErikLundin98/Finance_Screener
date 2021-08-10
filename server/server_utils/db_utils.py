@@ -24,7 +24,7 @@ def get_connectors(host, user, password, database):
     connection: sql connection object
     cursor: cursor object that is used to execute queries agains the database
     '''
-    print(host, user, password, database)
+    print(host, user, database)
     connection = psycopg2.connect(host=host, user=user, password=password, database=database)
     cursor = connection.cursor()
 
