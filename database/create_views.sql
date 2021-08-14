@@ -41,8 +41,8 @@ FROM temp
 ORDER BY DATE;
 
 
-DROP PROCEDURE IF EXISTS refresh_views;
-CREATE PROCEDURE refresh_views()
+
+CREATE OR REPLACE PROCEDURE refresh_views()
 LANGUAGE SQL
 AS
 $$
