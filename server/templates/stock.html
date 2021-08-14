@@ -1,35 +1,72 @@
 {% extends "index.html" %}
 
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/stock.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/bootstrap-multiselect-min.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/bootstrap-multiselect.min.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/plotly.js') }}"></script>
+{% endblock %}
 
 {% block content %}
-<h2>Market overview</h2>
-<div id="chart" class="chart"></div>
+<h2>Explore</h2>
 
-<h3>Today's returns</h3>
-<div class="container">
+
+<div class="d-flex bd-highlight">
+
+  <div class="p-4 bd-highlight fixed-width-1">
     <div class="row">
-      <div class="col">
-       <div id="table" class="chart"></div>
-      </div>
-      <div class="col">
-        Winners
-      </div>
-      <div class="col">
-        Losers
-      </div>
+      <select id="example-getting-started" multiple="multiple">
+        {% for item in tickers_info %}
+        <option value="{{ item.ticker }}">{{item.ticker}} ({{item.company_name}})</option>
+        {% endfor %}>
+      </select>
     </div>
+    <div class="row">
+      <span class="badge bg-light text-dark">Selected assets: </span>
+      <span class="badge bg-secondary">Stock1</span>
+      <span class="badge bg-secondary">Stock2</span>
+      <span class="badge bg-secondary">Stock2</span>
+      <span class="badge bg-secondary">Stock2</span>
+      <span class="badge bg-secondary">Stock2</span>
+      <span class="badge bg-secondary">Stock2</span>
+    </div>
+
   </div>
+  <div class="p-2 bd-highlight container-fluid">
+    <div id="chart" class="chart"></div>
+  </div>
+</div>
+
+<div class="d-flex bd-highlight row">
+  Tables here
+</div>
+
+
 
 {% endblock %}
 
+
 {% block endscripts %}
-
-<script src="{{ url_for('static', filename='scripts/plotly.js') }}"></script>
 <script type="text/javascript">
-    var graphs = {{linegraphJSON | safe}};
-    Plotly.plot('chart',graphs,{}); 
-    var table = {{dailyreturntableJSON | safe}};
-    Plotly.plot('table',table,{});        
-</script>
+  var graphs = {{ linegraphJSON | safe}};
+  Plotly.plot('chart', graphs, {});
+  /*var table = {{ dailyreturntableJSON | safe}};
+  Plotly.plot('table', table, {});*/
 
+  $(document).ready(function () {
+    $('#example-getting-started').multiselect({
+      enableFiltering: true,
+      includeFilterClearBtn: false,
+      enableCaseInsensitiveFiltering: true,
+      buttonWidth: '100%',
+      numberDisplayed: 1
+    });
+  });
+  $('#example-getting-started').on('click', function () {
+    $('#example-refresh').multiselect('refresh');
+  });
+</script>
 {% endblock %}
