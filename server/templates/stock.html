@@ -56,10 +56,17 @@
 
 {% block endscripts %}
 <script type="text/javascript">
-  var graphs = {{ linegraphJSON | safe}};
-  Plotly.plot('chart', graphs, {});
   /*var table = {{ dailyreturntableJSON | safe}};
   Plotly.plot('table', table, {});*/
+
+  function fillSelectBox(graphJSON) {
+    $('#example-getting-started').multiselect('select',
+      graphJSON.data.map(function (value) {
+        console.log(value.legendgroup)
+        return value.legendgroup;
+      })
+    );
+  }
 
   $(document).ready(function () {
     $('#example-getting-started').multiselect({
@@ -69,18 +76,27 @@
       buttonWidth: '100%',
       numberDisplayed: 1
     });
+
+    var graphJSON = {{ linegraphJSON | safe}};
+    Plotly.plot('chart', graphJSON, {});
+    fillSelectBox(graphJSON);
   });
+
+
   function select() {
-    var selected_tickers = $('#example-getting-started option:selected').map(function() {
+    var selected_tickers = $('#example-getting-started option:selected').map(function () {
       return this.value;
     }).get();
-    console.log(selected_tickers);
     $.getJSON({
-        url: "/stock/select", 
-        data: { 'data': selected_tickers }, 
-        success: function (result) {
-            Plotly.newPlot('chart', result, {});;
-        }
+      url: "/stock/select",
+      data: { 'data': selected_tickers },
+      success: function (result) {
+        console.log(result.data);
+        //fillSelectBox(result);
+        // Retrieve tickers supplied to plot and add them to select box
+
+        Plotly.newPlot('chart', result, {});
+      }
     });
   }
 </script>

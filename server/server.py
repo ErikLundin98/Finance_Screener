@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from flask_login import LoginManager
 from server_utils.data_management import DataManager
 import plotly
@@ -34,6 +34,7 @@ def get_market_data_page():
 def get_selected_market_data():
     selected_tickers = request.args.getlist('data[]')
     print(selected_tickers)
+
     return get_market_data(tickers=selected_tickers)
 
 def get_market_data(tickers=['NVDA']):
