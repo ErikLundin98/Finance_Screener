@@ -30,6 +30,30 @@
     </div>
     <div class="row">
       <div class="col-sm-offset-2 col-sm-10">
+        <div id="data-toggle-radio" class="btn-group btn-group-toggle centered" data-toggle="buttons">
+          <label class="btn date-btn" onclick="select()">
+            <input type="radio" name="date-options" autocomplete="off" value="100y"> All
+          </label>
+          <label class="btn date-btn">
+            <input onclick="select()" type="radio" name="date-options" autocomplete="off" value="5 years"> 5y
+          </label>
+          <label class="btn active date-btn">
+            <input onclick="select()" type="radio" name="date-options" autocomplete="off" checked value="1 year"> 1y
+          </label>
+          <label class="btn date-btn" onclick="select()">
+            <input type="radio" name="date-options" autocomplete="off" value="6 months"> 6m
+          </label>
+          <label class="btn date-btn" onclick="select()">
+            <input type="radio" name="date-options" autocomplete="off" value="1 month"> 1m
+          </label>
+          <label class="btn date-btn" onclick="select()">
+            <input type="radio" name="date-options" autocomplete="off" value="1 week"> 1w
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-offset-2 col-sm-10 centered">
         <button onclick="select()" class="btn btn-default">Update</button>
       </div>
     </div>
@@ -38,10 +62,6 @@
   <div class="p-2 bd-highlight container-fluid">
     <div>
       <div id="chart" class="chart"></div>
-    </div>
-    <div>
-      <label for="customRange1" class="form-label">Example range</label>
-      <input type="range" class="form-range" id="customRange1">
     </div>
 
   </div>
@@ -108,12 +128,17 @@
 
 
   function select() {
-    var selected_tickers = $('#example-getting-started option:selected').map(function () {
+    console.log('selecting');
+    var selectedTickers = $('#example-getting-started option:selected').map(function () {
       return this.value;
     }).get();
+    var selectedDaterange = $('input[name="date-options"]:checked').val();
     $.getJSON({
       url: "/stock/select",
-      data: { 'data': selected_tickers },
+      data: {
+        'tickers': selectedTickers,
+        'date-range': selectedDaterange
+      },
       success: function (result) {
         console.log(result.data);
         fillOptions(result);
@@ -123,5 +148,6 @@
       }
     });
   }
+
 </script>
 {% endblock %}

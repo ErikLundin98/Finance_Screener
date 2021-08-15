@@ -27,32 +27,33 @@ def hello():
 @app.route('/stock')
 def get_market_data_page():
     tickers_info = dm.query_df('SELECT ticker, company_name, category FROM used_tickers ORDER BY ticker ASC').to_dict('records')
-    returns_graphJSON = get_market_data()
-    return render_template('stock.html', linegraphJSON=returns_graphJSON, tickers_info=tickers_info)#, dailyreturntableJSON=today_returns_graphJSON)
+    prices_graphJSON = get_market_data()
+    return render_template('stock.html', linegraphJSON=prices_graphJSON, tickers_info=tickers_info)#, dailyreturntableJSON=today_prices_graphJSON)
 
 @app.route('/stock/select')
 def get_selected_market_data():
-    selected_tickers = request.args.getlist('data[]')
-    print(selected_tickers)
+    selected_tickers = request.args.getlist('tickers[]')
+    selected_daterange = request.args.get('date-range')
+    print(selected_tickers, selected_daterange)
 
-    return get_market_data(tickers=selected_tickers)
+    return get_market_data(tickers=selected_tickers, daterange=selected_daterange)
 
-def get_market_data(tickers=['NVDA']):
+def get_market_data(tickers=['NVDA'], daterange='1 year'):
     
     if not tickers:
         tickers = [""]
 
     print('querying df')
-    returns_df = dm.query_df(
-        'SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30 AND ticker IN {}'.format(dm.tuple_string(tickers))
+    prices_df = dm.query_df(
+        'SELECT ticker, date, adjusted_close AS "adjusted close" FROM clean_daily WHERE date > CURRENT_DATE-interval \'{}\' AND ticker IN {}'.format(daterange, dm.tuple_string(tickers))
         )
-    fig = px.line(returns_df, x='date', y='arithmetic_return', color='ticker')
+    fig = px.line(prices_df, x='date', y='adjusted close', color='ticker')
     fig.update_layout(
-        yaxis_tickformat='.001%', 
+        #yaxis_tickformat='.001%', 
         margin=dict(l=0, r=0, t=0, b=0))
     
-    returns_graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    return returns_graphJSON
+    prices_graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    return prices_graphJSON
 
 @app.route('/update')
 def update_db():

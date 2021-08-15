@@ -4,3 +4,19 @@
 .badge {
     margin: 2px;
 }
+.centered {
+    /* position:fixed; */
+    margin: auto;
+    width: 50%;
+}
+
+.date-btn {
+    color: #fff;
+    background-color: lightgreen;
+    border-color: darkgreen; /*set the color you want here*/
+}
+.date-btn:hover, .date-btn:focus, .date-btn:active, .date-btn.active, .open>.dropdown-toggle.date-btn {
+    color: white;
+    background-color: green;
+    border-color: darkgreen; /*set the color you want here*/
+}
