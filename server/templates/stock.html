@@ -36,7 +36,14 @@
 
   </div>
   <div class="p-2 bd-highlight container-fluid">
-    <div id="chart" class="chart"></div>
+    <div>
+      <div id="chart" class="chart"></div>
+    </div>
+    <div>
+      <label for="customRange1" class="form-label">Example range</label>
+      <input type="range" class="form-range" id="customRange1">
+    </div>
+
   </div>
 </div>
 
@@ -62,7 +69,13 @@
   function addBadge(tickerBadge) {
     $('#selected-tickers-badges').append('<a href="#" onclick=removeBadge("' + tickerBadge + '") class="ticker-badge badge badge-pill badge-success">' + tickerBadge + '</span>');
   }
-  function fillSelectBox(graphJSON) {
+  function reloadBadges() {
+    removeBadges();
+    for (const ticker of $("#example-getting-started").val()) {
+      addBadge(ticker);
+    }
+  }
+  function fillOptions(graphJSON) {
     $('#example-getting-started').multiselect('select',
       graphJSON.data.map(function (value) {
         console.log(value.legendgroup)
@@ -71,18 +84,9 @@
     );
     reloadBadges();
   }
-
-  function reloadBadges() {
-    removeBadges();
-    for(const ticker of $("#example-getting-started").val()) {
-      addBadge(ticker);
-    }
-  }
-
   $("#example-getting-started").change(function () {
     reloadBadges();
   });
-
   $(document).ready(function () {
     $('#example-getting-started').multiselect({
       enableFiltering: true,
@@ -90,14 +94,16 @@
       enableCaseInsensitiveFiltering: true,
       buttonWidth: '100%',
       numberDisplayed: 1,
-      buttonContainer: '<div class="btn-group"/>'
+      buttonContainer: '<div class="btn-group"/>',
+      includeSelectAllOption: true,
+      selectAllValue: 'select-all-value'
     });
 
 
     var graphJSON = {{ linegraphJSON | safe
   }};
   Plotly.plot('chart', graphJSON, {});
-  fillSelectBox(graphJSON);
+  fillOptions(graphJSON);
   });
 
 
@@ -110,7 +116,7 @@
       data: { 'data': selected_tickers },
       success: function (result) {
         console.log(result.data);
-        fillSelectBox(result);
+        fillOptions(result);
         // Retrieve tickers supplied to plot and add them to select box
 
         Plotly.newPlot('chart', result, {});
