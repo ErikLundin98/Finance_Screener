@@ -18,7 +18,7 @@
 
   <div class="p-4 bd-highlight fixed-width-1">
     <div class="row">
-      <select id="example-getting-started" multiple="multiple">
+      <select id="ticker-multiselect" multiple="multiple">
         {% for item in tickers_info %}
         <option class="ticker-option" value="{{ item.ticker }}">{{item.ticker}} ({{item.company_name}})</option>
         {% endfor %}>
@@ -26,7 +26,6 @@
     </div>
     <div id="selected-tickers-badges" class="row">
       <span class="badge bg-light text-dark">Selected assets: </span>
-
     </div>
     <div class="row">
       <div class="col-sm-offset-2 col-sm-10">
@@ -52,6 +51,15 @@
         </div>
       </div>
     </div>
+
+    <div class="row">
+      <select id="indicator-multiselect" multiple="multiple">
+        {% for item in indicators_info %}
+        <option class="indicator-option" value="{{ item.indicator }}">{{item.indicator}}</option>
+        {% endfor %}>
+      </select>
+    </div>
+
     <div class="row">
       <div class="col-sm-offset-2 col-sm-10 centered">
         <button onclick="select()" class="btn btn-default">Update</button>
@@ -84,19 +92,19 @@
   }
   function removeBadge(tickerBadge) {
     $('.ticker-badge').filter(':contains("' + tickerBadge + '")').remove();
-    $('#example-getting-started').multiselect('deselect', tickerBadge);
+    $('#ticker-multiselect').multiselect('deselect', tickerBadge);
   }
   function addBadge(tickerBadge) {
     $('#selected-tickers-badges').append('<a href="#" onclick=removeBadge("' + tickerBadge + '") class="ticker-badge badge badge-pill badge-success">' + tickerBadge + '</span>');
   }
   function reloadBadges() {
     removeBadges();
-    for (const ticker of $("#example-getting-started").val()) {
+    for (const ticker of $("#ticker-multiselect").val()) {
       addBadge(ticker);
     }
   }
   function fillOptions(graphJSON) {
-    $('#example-getting-started').multiselect('select',
+    $('#ticker-multiselect').multiselect('select',
       graphJSON.data.map(function (value) {
         console.log(value.legendgroup)
         return value.legendgroup;
@@ -104,11 +112,11 @@
     );
     reloadBadges();
   }
-  $("#example-getting-started").change(function () {
+  $("#ticker-multiselect").change(function () {
     reloadBadges();
   });
   $(document).ready(function () {
-    $('#example-getting-started').multiselect({
+    $('#ticker-multiselect').multiselect({
       enableFiltering: true,
       includeFilterClearBtn: false,
       enableCaseInsensitiveFiltering: true,
@@ -118,7 +126,17 @@
       includeSelectAllOption: true,
       selectAllValue: 'select-all-value'
     });
-
+    $('#indicator-multiselect').multiselect({
+      enableFiltering: true,
+      includeFilterClearBtn: false,
+      enableCaseInsensitiveFiltering: true,
+      buttonWidth: '100%',
+      numberDisplayed: 1,
+      buttonContainer: '<div class="btn-group"/>',
+      includeSelectAllOption: true,
+      selectAllValue: 'select-all-value'
+    });
+    
 
     var graphJSON = {{ linegraphJSON | safe
   }};
@@ -129,7 +147,7 @@
 
   function select() {
     console.log('selecting');
-    var selectedTickers = $('#example-getting-started option:selected').map(function () {
+    var selectedTickers = $('#ticker-multiselect option:selected').map(function () {
       return this.value;
     }).get();
     var selectedDaterange = $('input[name="date-options"]:checked').val();

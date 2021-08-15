@@ -1,10 +1,12 @@
-DROP MATERIALIZED VIEW IF EXISTS used_dates;
-DROP MATERIALIZED VIEW IF EXISTS daily_returns;
-DROP MATERIALIZED VIEW IF EXISTS clean_daily;
-/*Shows the latest updated dates (lazy check)*/
-CREATE MATERIALIZED VIEW used_dates AS SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" FROM daily GROUP BY ticker ORDER BY ticker ASC;
 
-CREATE MATERIALIZED VIEW clean_daily AS
+/*Shows the latest updated dates (lazy check)*/
+CREATE OR REPLACE MATERIALIZED VIEW used_dates AS 
+SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
+FROM daily 
+GROUP BY ticker 
+ORDER BY ticker ASC;
+
+CREATE OR REPLACE MATERIALIZED VIEW clean_daily AS
 SELECT 
     date,
     ticker,
@@ -18,7 +20,7 @@ SELECT
 FROM daily
 ORDER BY date;
 
-CREATE MATERIALIZED VIEW daily_returns AS
+CREATE OR REPLACE MATERIALIZED VIEW daily_returns AS
 WITH temp AS (
     SELECT 
         date,
@@ -39,8 +41,6 @@ SELECT
     AS "logarithmic_return"
 FROM temp
 ORDER BY DATE;
-
-
 
 CREATE OR REPLACE PROCEDURE refresh_views()
 LANGUAGE SQL

@@ -41,18 +41,3 @@ $$
     END;
 $$;
 
-/*
-CREATE OR REPLACE FUNCTION get_portfolio()
-RETURNS TABLE(date DATE, returns FLOAT8[])
-LANGUAGE 'plpgsql'
-AS $BODY$
-DECLARE
-   portfolio_query TEXT;
-BEGIN 
-   SELECT get_portfolio_query() INTO portfolio_query;
-   RETURN QUERY EXECUTE portfolio_query; 
-END 
-$BODY$;
-
-SELECT * FROM get_portfolio() AS portfolio;
-*/

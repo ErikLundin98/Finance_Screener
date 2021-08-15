@@ -27,8 +27,18 @@ def hello():
 @app.route('/stock')
 def get_market_data_page():
     tickers_info = dm.query_df('SELECT ticker, company_name, category FROM used_tickers ORDER BY ticker ASC').to_dict('records')
+    indicators_info= [
+        {
+            'indicator' : 'one-year volatility',
+            'explanation' : 'you should know this'
+        },
+        {
+            'indicator' : 'all-time volatility',
+            'explanation' : 'you should know this'
+        },
+    ]
     prices_graphJSON = get_market_data()
-    return render_template('stock.html', linegraphJSON=prices_graphJSON, tickers_info=tickers_info)#, dailyreturntableJSON=today_prices_graphJSON)
+    return render_template('stock.html', linegraphJSON=prices_graphJSON, tickers_info=tickers_info, indicators_info=indicators_info)#, dailyreturntableJSON=today_prices_graphJSON)
 
 @app.route('/stock/select')
 def get_selected_market_data():
@@ -53,6 +63,7 @@ def get_market_data(tickers=['NVDA'], daterange='1 year'):
         margin=dict(l=0, r=0, t=0, b=0))
     
     prices_graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
     return prices_graphJSON
 
 @app.route('/update')
