@@ -41,3 +41,40 @@ $$
     END;
 $$;
 
+
+
+/*RETURNS FUNCTION*/
+CREATE OR REPLACE FUNCTION range_arit_return(in_ticker TEXT, startd DATE, endd DATE)
+RETURNS float8
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    ret float8;
+BEGIN
+    SELECT tend.adjusted_close/tstart.adjusted_close - 1 INTO ret 
+    FROM clean_daily AS tend, clean_daily AS tstart
+    WHERE tend.date = endd AND tend.ticker = in_ticker
+    AND tstart.date = startd AND tstart.ticker = in_ticker;
+    
+    RETURN ret;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION range_log_return(in_ticker TEXT, startd DATE, endd DATE)
+RETURNS float8
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    ret float8;
+BEGIN
+    SELECT LN(tend.adjusted_close/tstart.adjusted_close) INTO ret 
+    FROM clean_daily AS tend, clean_daily AS tstart
+    WHERE tend.date = endd AND tend.ticker = in_ticker
+    AND tstart.date = startd AND tstart.ticker = in_ticker;
+    
+    RETURN ret;
+END;
+$$;
+
