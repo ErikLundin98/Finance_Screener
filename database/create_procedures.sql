@@ -42,26 +42,7 @@ $$
 $$;
 
 
-
-/*RETURNS FUNCTION*/
-CREATE OR REPLACE FUNCTION range_arit_return(in_ticker TEXT, startd DATE, endd DATE)
-RETURNS float8
-LANGUAGE plpgsql
-AS
-$$
-DECLARE
-    ret float8;
-BEGIN
-    SELECT tend.adjusted_close/tstart.adjusted_close - 1 INTO ret 
-    FROM clean_daily AS tend, clean_daily AS tstart
-    WHERE tend.date = endd AND tend.ticker = in_ticker
-    AND tstart.date = startd AND tstart.ticker = in_ticker;
-    
-    RETURN ret;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION range_log_return(in_ticker TEXT, startd DATE, endd DATE)
+CREATE OR REPLACE FUNCTION range_return(in_ticker TEXT, startd DATE, endd DATE, return_type TEXT)
 RETURNS float8
 LANGUAGE plpgsql
 AS
@@ -71,26 +52,28 @@ DECLARE
     closest_start DATE;
     closest_end DATE;
 BEGIN
-    SELECT date INTO closest_start 
-    FROM clean_daily 
+    SELECT date INTO closest_start FROM clean_daily 
     WHERE ticker = in_ticker AND date >= startd
-    ORDER BY DATE ASC
-    LIMIT 1;
+    ORDER BY DATE ASC LIMIT 1;
 
-    SELECT date INTO closest_end 
-    FROM clean_daily 
+    SELECT date INTO closest_end FROM clean_daily 
     WHERE ticker = in_ticker AND date <= endd
-    ORDER BY DATE DESC
-    LIMIT 1;
+    ORDER BY DATE DESC LIMIT 1;
 
-    SELECT LN(tend.adjusted_close/tstart.adjusted_close) INTO ret 
-    FROM clean_daily AS tend, clean_daily AS tstart
-    WHERE tend.date = closest_end AND tend.ticker = in_ticker
-    AND tstart.date = closest_start AND tstart.ticker = in_ticker
-    LIMIT 1;
+    IF return_type = 'log' THEN
+        SELECT LN(tend.adjusted_close/tstart.adjusted_close) INTO ret 
+        FROM clean_daily AS tend, clean_daily AS tstart
+        WHERE tend.date = closest_end AND tend.ticker = in_ticker
+        AND tstart.date = closest_start AND tstart.ticker = in_ticker
+        LIMIT 1;
+    ELSE
+        SELECT tend.adjusted_close/tstart.adjusted_close - 1 INTO ret 
+        FROM clean_daily AS tend, clean_daily AS tstart
+        WHERE tend.date = closest_end AND tend.ticker = in_ticker
+        AND tstart.date = closest_start AND tstart.ticker = in_ticker
+        LIMIT 1;
+    END IF;
     
     RETURN ret;
 END;
 $$;
-
-SELECT range_log_return('NVDA', '2020-01-01', '2021-01-01');
