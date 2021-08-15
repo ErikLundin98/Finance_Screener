@@ -36,11 +36,11 @@ def get_selected_market_data():
     print(selected_tickers)
     return get_market_data(tickers=selected_tickers)
 
-def get_market_data(tickers='NVDA'):
+def get_market_data(tickers=['NVDA']):
     print(tickers)
     print('querying df')
     returns_df = dm.query_df(
-        'SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30 AND ticker IN {}'.format(tuple(tickers))
+        'SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30 AND ticker IN {}'.format(dm.tuple_string(tickers))
         )
     fig = px.line(returns_df, x='date', y='arithmetic_return', color='ticker')
     fig.update_layout(

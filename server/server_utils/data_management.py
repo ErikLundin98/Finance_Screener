@@ -101,6 +101,9 @@ class DataManager:
     def query_df(self, query:str) -> pd.DataFrame:
         return pdsqlio.read_sql_query(query, self.connection)
 
+    def tuple_string(self, elements):
+        return '('+', '.join(f'\'{element}\'' for element in elements)+')'
+
     def __del__(self):
         self.cursor.close()
         self.connection.close()
