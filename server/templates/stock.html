@@ -24,18 +24,13 @@
         {% endfor %}>
       </select>
     </div>
-    <div class="row">
+    <div id="selected-tickers-badges" class="row">
       <span class="badge bg-light text-dark">Selected assets: </span>
-      <span class="badge bg-secondary">Stock1</span>
-      <span class="badge bg-secondary">Stock2</span>
-      <span class="badge bg-secondary">Stock2</span>
-      <span class="badge bg-secondary">Stock2</span>
-      <span class="badge bg-secondary">Stock2</span>
-      <span class="badge bg-secondary">Stock2</span>
+
     </div>
     <div class="row">
       <div class="col-sm-offset-2 col-sm-10">
-        <button onclick="select()" class="btn btn-default">Submit</button>
+        <button onclick="select()" class="btn btn-default">Update</button>
       </div>
     </div>
 
@@ -56,9 +51,17 @@
 
 {% block endscripts %}
 <script type="text/javascript">
-  /*var table = {{ dailyreturntableJSON | safe}};
-  Plotly.plot('table', table, {});*/
 
+  function removeBadges() {
+    $('.ticker-badge').remove();
+  }
+  function removeBadge(tickerBadge) {
+    $('.ticker-badge').filter(':contains("' + tickerBadge + '")').remove();
+    $('#example-getting-started').multiselect('deselect', tickerBadge);
+  }
+  function addBadge(tickerBadge) {
+    $('#selected-tickers-badges').append('<span onclick=removeBadge("' + tickerBadge + '") class="ticker-badge badge badge-pill bg-success">' + tickerBadge + '</span>');
+  }
   function fillSelectBox(graphJSON) {
     $('#example-getting-started').multiselect('select',
       graphJSON.data.map(function (value) {
@@ -66,7 +69,19 @@
         return value.legendgroup;
       })
     );
+    reloadBadges();
   }
+
+  function reloadBadges() {
+    removeBadges();
+    for(const ticker of $("#example-getting-started").val()) {
+      addBadge(ticker);
+    }
+  }
+
+  $("#example-getting-started").change(function () {
+    reloadBadges();
+  });
 
   $(document).ready(function () {
     $('#example-getting-started').multiselect({
@@ -74,12 +89,15 @@
       includeFilterClearBtn: false,
       enableCaseInsensitiveFiltering: true,
       buttonWidth: '100%',
-      numberDisplayed: 1
+      numberDisplayed: 1,
+      buttonContainer: '<div class="btn-group"/>'
     });
 
-    var graphJSON = {{ linegraphJSON | safe}};
-    Plotly.plot('chart', graphJSON, {});
-    fillSelectBox(graphJSON);
+
+    var graphJSON = {{ linegraphJSON | safe
+  }};
+  Plotly.plot('chart', graphJSON, {});
+  fillSelectBox(graphJSON);
   });
 
 
@@ -92,7 +110,7 @@
       data: { 'data': selected_tickers },
       success: function (result) {
         console.log(result.data);
-        //fillSelectBox(result);
+        fillSelectBox(result);
         // Retrieve tickers supplied to plot and add them to select box
 
         Plotly.newPlot('chart', result, {});
