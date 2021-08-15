@@ -35,7 +35,8 @@ WITH one_year AS (
         geomean(arithmetic_return) AS ONE_Y_arit_geomean,
         stddev(logarithmic_return) AS ONE_Y_log_stdev,
         avg(logarithmic_return) AS ONE_Y_log_aritmean,
-        CURRENT_DATE - interval '1 year' AS ONE_Y_first_date
+        CURRENT_DATE - interval '1 year' AS ONE_Y_first_date,
+        (SELECT range_arit_return(ticker, CAST(CURRENT_DATE - interval '1 year' AS DATE), CURRENT_DATE)) AS ONE_Y_arit_return
     FROM daily_returns WHERE date >= ONE_Y_first_date
     GROUP BY ticker
 ),
