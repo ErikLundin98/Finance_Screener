@@ -20,7 +20,7 @@
     <div class="row">
       <select id="example-getting-started" multiple="multiple">
         {% for item in tickers_info %}
-        <option value="{{ item.ticker }}">{{item.ticker}} ({{item.company_name}})</option>
+        <option class="ticker-option" value="{{ item.ticker }}">{{item.ticker}} ({{item.company_name}})</option>
         {% endfor %}>
       </select>
     </div>
@@ -32,6 +32,11 @@
       <span class="badge bg-secondary">Stock2</span>
       <span class="badge bg-secondary">Stock2</span>
       <span class="badge bg-secondary">Stock2</span>
+    </div>
+    <div class="row">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button onclick="select()" class="btn btn-default">Submit</button>
+      </div>
     </div>
 
   </div>
@@ -65,8 +70,18 @@
       numberDisplayed: 1
     });
   });
-  $('#example-getting-started').on('click', function () {
-    $('#example-refresh').multiselect('refresh');
-  });
+  function select() {
+    var selected_tickers = $('#example-getting-started option:selected').map(function() {
+      return this.value;
+    }).get();
+    console.log(selected_tickers);
+    $.getJSON({
+        url: "/stock/select", 
+        data: { 'data': selected_tickers }, 
+        success: function (result) {
+            Plotly.newPlot('chart', result, {});;
+        }
+    });
+  }
 </script>
 {% endblock %}

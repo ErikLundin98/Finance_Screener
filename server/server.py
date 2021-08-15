@@ -27,13 +27,21 @@ def hello():
 @app.route('/stock')
 def get_market_data_page():
     tickers_info = dm.query_df('SELECT ticker, company_name, category FROM used_tickers ORDER BY ticker ASC').to_dict('records')
-    returns_graphJSON = get_selected_market_data()
+    returns_graphJSON = get_market_data()
     return render_template('stock.html', linegraphJSON=returns_graphJSON, tickers_info=tickers_info)#, dailyreturntableJSON=today_returns_graphJSON)
 
 @app.route('/stock/select')
-def get_selected_market_data(tickers='NVDA'):
+def get_selected_market_data():
+    selected_tickers = request.args.getlist('data[]')
+    print(selected_tickers)
+    return get_market_data(tickers=selected_tickers)
+
+def get_market_data(tickers='NVDA'):
+    print(tickers)
     print('querying df')
-    returns_df = dm.query_df('SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30')
+    returns_df = dm.query_df(
+        'SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30 AND ticker IN {}'.format(tuple(tickers))
+        )
     fig = px.line(returns_df, x='date', y='arithmetic_return', color='ticker')
     fig.update_layout(
         yaxis_tickformat='.001%', 
