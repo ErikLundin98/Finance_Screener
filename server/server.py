@@ -38,7 +38,10 @@ def get_selected_market_data():
     return get_market_data(tickers=selected_tickers)
 
 def get_market_data(tickers=['NVDA']):
-    print(tickers)
+    
+    if not tickers:
+        tickers = [""]
+
     print('querying df')
     returns_df = dm.query_df(
         'SELECT ticker, date, arithmetic_return FROM daily_returns WHERE date > CURRENT_DATE-30 AND ticker IN {}'.format(dm.tuple_string(tickers))

@@ -60,7 +60,7 @@
     $('#example-getting-started').multiselect('deselect', tickerBadge);
   }
   function addBadge(tickerBadge) {
-    $('#selected-tickers-badges').append('<span onclick=removeBadge("' + tickerBadge + '") class="ticker-badge badge badge-pill bg-success">' + tickerBadge + '</span>');
+    $('#selected-tickers-badges').append('<a href="#" onclick=removeBadge("' + tickerBadge + '") class="ticker-badge badge badge-pill badge-success">' + tickerBadge + '</span>');
   }
   function fillSelectBox(graphJSON) {
     $('#example-getting-started').multiselect('select',
