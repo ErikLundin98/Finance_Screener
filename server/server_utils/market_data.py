@@ -14,7 +14,6 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
         end=end,
         group_by='ticker'
     )
-    print(data.head())
     # returns a multi-indexed pandas dataframe that needs to be processed!
     if len(tickers) > 1:
         processed_df = pd.DataFrame()

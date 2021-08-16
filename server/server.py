@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, make_response
 from flask_login import LoginManager
 from server_utils.data_management import DataManager
 import plotly
@@ -20,9 +20,12 @@ def login():
     if request.method=='POST':
         return
 
-@app.route('/hello')
-def hello():
-    return render_template('hello.html')
+@app.route('/api/update')
+def update():
+    dm.add_missing_daily_data(refresh_views=True)
+    res = make_response("Update complete!", 200)
+    res.mimetype = 'text/plain'
+    return res
 
 @app.route('/stock')
 def get_market_data_page():

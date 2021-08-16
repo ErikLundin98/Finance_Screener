@@ -129,15 +129,17 @@ REFRESH MATERIALIZED VIEW daily_returns;
 REFRESH MATERIALIZED VIEW asset_indicators;
 $$;
 
-CREATE FUNCTION trigger_refresh_views_function() 
+CREATE OR REPLACE FUNCTION trigger_refresh_views_function() 
    RETURNS TRIGGER 
    LANGUAGE PLPGSQL
 AS $$
 BEGIN
    CALL refresh_views();
+   RETURN NEW;
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trigger_refresh_views ON daily;
 CREATE TRIGGER trigger_refresh_views
 AFTER INSERT ON daily FOR EACH STATEMENT
 EXECUTE PROCEDURE trigger_refresh_views_function();
