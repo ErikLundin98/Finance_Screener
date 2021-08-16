@@ -17,10 +17,11 @@ DROP MATERIALIZED VIEW IF EXISTS used_dates CASCADE;
 CREATE MATERIALIZED VIEW used_dates AS 
 SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
 FROM clean_daily 
-WHERE adjusted_close IS NOT NULL
+WHERE adjusted_close IS NOT NULL AND adjusted_close <> 0
 GROUP BY ticker 
 ORDER BY ticker ASC;
 
+DROP MATERIALIZED VIEW IF EXISTS daily_returns CASCADE;
 CREATE MATERIALIZED VIEW daily_returns AS
 WITH temp AS (
     SELECT 
@@ -30,8 +31,8 @@ WITH temp AS (
         FROM clean_daily
 )
 SELECT
-    date,
-    ticker,
+    temp.date,
+    temp.ticker,
     CASE WHEN div = 0 THEN 0
     ELSE div - 1
     END
@@ -40,7 +41,8 @@ SELECT
     ELSE LN(div)
     END
     AS "logarithmic_return"
-FROM temp
+FROM temp, used_dates
+WHERE temp.ticker = used_dates.ticker AND temp.date > used_dates.first_date
 ORDER BY DATE;
 
 /*Technical analysis view for all assets in database*/
@@ -107,7 +109,7 @@ all_time AS (
         stddev(logarithmic_return) AS AT_log_stdev,
         avg(logarithmic_return) AS AT_log_aritmean,
         (SELECT MAX(first_date) FROM used_dates AS AT_first_date)
-    FROM daily_returns WHERE date >= (SELECT MAX(first_date) FROM used_dates)
+    FROM daily_returns, dates WHERE date <= dates.AT_last_date AND date >= dates.AT_first_date
     GROUP BY ticker
 )
 SELECT 
@@ -133,3 +135,4 @@ REFRESH MATERIALIZED VIEW daily_returns;
 REFRESH MATERIALIZED VIEW asset_indicators;
 $$;
 
+CALL refresh_views();
