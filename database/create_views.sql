@@ -13,9 +13,11 @@ FROM daily
 ORDER BY date;
 
 /*Shows the latest updated dates (lazy check)*/
+DROP MATERIALIZED VIEW IF EXISTS used_dates CASCADE;
 CREATE MATERIALIZED VIEW used_dates AS 
 SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
-FROM daily 
+FROM clean_daily 
+WHERE adjusted_close IS NOT NULL
 GROUP BY ticker 
 ORDER BY ticker ASC;
 
