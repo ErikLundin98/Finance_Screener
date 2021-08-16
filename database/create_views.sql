@@ -1,12 +1,4 @@
-
-/*Shows the latest updated dates (lazy check)*/
-CREATE OR REPLACE MATERIALIZED VIEW used_dates AS 
-SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
-FROM daily 
-GROUP BY ticker 
-ORDER BY ticker ASC;
-
-CREATE OR REPLACE MATERIALIZED VIEW clean_daily AS
+CREATE MATERIALIZED VIEW clean_daily AS
 SELECT 
     date,
     ticker,
@@ -20,7 +12,14 @@ SELECT
 FROM daily
 ORDER BY date;
 
-CREATE OR REPLACE MATERIALIZED VIEW daily_returns AS
+/*Shows the latest updated dates (lazy check)*/
+CREATE MATERIALIZED VIEW used_dates AS 
+SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
+FROM daily 
+GROUP BY ticker 
+ORDER BY ticker ASC;
+
+CREATE MATERIALIZED VIEW daily_returns AS
 WITH temp AS (
     SELECT 
         date,
@@ -76,13 +75,17 @@ WITH dates AS (
     SELECT
         CURRENT_DATE AS today,
         CAST(CURRENT_DATE - interval '1 year' AS DATE) AS ONE_Y_first_date,
-        (SELECT MAX(first_date) FROM used_dates AS AT_first_date)
+        (SELECT MAX(first_date) FROM used_dates) AS AT_first_date,
+        (SELECT MIN(last_date) FROM used_dates) AS AT_last_date
 ),
 ticker_returns AS (
     SELECT
-        ticker,
-        range_return(ticker, dates.ONE_Y_first_date, dates.today, 'arit') AS ONE_Y_arit_return
-    FROM used_tickers, dates
+        used_tickers.ticker AS ticker,
+        range_return(used_tickers.ticker, dates.ONE_Y_first_date, dates.today, 'arit') AS ONE_Y_arit_return,
+        range_return(used_tickers.ticker, dates.AT_first_date, dates.AT_last_date, 'arit') AS ALL_SAME_T_arit_return,
+        range_return(used_tickers.ticker, used_dates.first_date, used_dates.last_date, 'arit') AS ALL_T_arit_return
+    FROM used_tickers, dates, used_dates
+    WHERE used_tickers.ticker = used_dates.ticker
 ),
 one_year AS (
     SELECT
@@ -106,8 +109,8 @@ all_time AS (
     GROUP BY ticker
 )
 SELECT 
-    used_tickers.ticker,
-    ticker_returns.ONE_Y_arit_return,
+    used_tickers.ticker AS ticker,
+    ticker_returns.ONE_Y_arit_return, ticker_returns.ALL_SAME_T_arit_return, ticker_returns.ALL_T_arit_return,
     ONE_Y_arit_stdev, ONE_Y_arit_geomean, ONE_Y_log_stdev, ONE_Y_log_aritmean,
     AT_arit_stdev, AT_arit_geomean, AT_log_stdev, AT_log_aritmean
     FROM used_tickers
@@ -120,7 +123,6 @@ SELECT
 
 CREATE OR REPLACE PROCEDURE refresh_views()
 LANGUAGE SQL
-RETURNS TRIGGER
 AS
 $$
 REFRESH MATERIALIZED VIEW used_dates;
@@ -128,19 +130,4 @@ REFRESH MATERIALIZED VIEW clean_daily;
 REFRESH MATERIALIZED VIEW daily_returns;
 REFRESH MATERIALIZED VIEW asset_indicators;
 $$;
-
-CREATE OR REPLACE FUNCTION trigger_refresh_views_function() 
-   RETURNS TRIGGER 
-   LANGUAGE PLPGSQL
-AS $$
-BEGIN
-   CALL refresh_views();
-   RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS trigger_refresh_views ON daily;
-CREATE TRIGGER trigger_refresh_views
-AFTER INSERT ON daily FOR EACH STATEMENT
-EXECUTE PROCEDURE trigger_refresh_views_function();
 

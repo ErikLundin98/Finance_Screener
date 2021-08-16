@@ -47,7 +47,6 @@ def get_market_data_page():
 def get_selected_market_data():
     selected_tickers = request.args.getlist('tickers[]')
     selected_daterange = request.args.get('date-range')
-    print(selected_tickers, selected_daterange)
 
     return get_market_data(tickers=selected_tickers, daterange=selected_daterange)
 

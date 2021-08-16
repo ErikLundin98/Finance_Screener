@@ -47,6 +47,7 @@ class DataManager:
         if not favorite_quote:
             favorite_quote = ''
         dbu.insert_row(self.connection, self.cursor, 'investors', ('user_name', 'birth_date', 'favorite_quote'), (user_name, birth_year, favorite_quote))
+        self.connection.commit()
 
     def add_to_portfolio(self, user_name:str, tickers:list, amounts:list):
         '''
@@ -54,6 +55,7 @@ class DataManager:
         '''
         data = [(user_name, ticker, amount) for ticker, amount in zip(tickers, amounts)]
         dbu.insert_rows(self.connection, self.cursor, 'portfolios', ('user_name', 'ticker', 'amount'), data)
+        self.connection.commit()
 
     def data_query(self, query:str, get_output=True) -> Any:
         '''
@@ -84,6 +86,7 @@ class DataManager:
                         data=daily_data, 
                         do_on_conflict=do_on_conflict
                         )
+        self.connection.commit()
 
     def add_missing_daily_data(self, refresh_views=True):
         tickers_and_dates = self.data_query('SELECT ticker, last_date FROM used_dates;')
