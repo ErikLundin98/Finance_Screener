@@ -1,4 +1,4 @@
-/*TODO: remove non-null values from this view*/
+
 DROP MATERIALIZED VIEW IF EXISTS clean_daily CASCADE;
 CREATE MATERIALIZED VIEW clean_daily AS
 SELECT 
@@ -132,7 +132,6 @@ SELECT
     JOIN one_year ON used_tickers.ticker = one_year.ticker
     JOIN all_time ON one_year.ticker = all_time.ticker
     JOIN ticker_returns ON ticker_returns.ticker = used_tickers.ticker;
-
 
 /* PROCEDURE to refresh views*/
 

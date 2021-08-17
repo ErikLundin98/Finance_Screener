@@ -30,22 +30,22 @@
     <div class="row">
       <div class="col-sm-offset-2 col-sm-10">
         <div id="data-toggle-radio" class="btn-group btn-group-toggle centered" data-toggle="buttons">
-          <label class="btn date-btn" >
+          <label class="btn date-btn">
             <input type="radio" name="date-options" autocomplete="off" value="100y"> All
           </label>
           <label class="btn date-btn">
-            <input  type="radio" name="date-options" autocomplete="off" value="5 years"> 5y
+            <input type="radio" name="date-options" autocomplete="off" value="5 years"> 5y
           </label>
           <label class="btn active date-btn">
-            <input  type="radio" name="date-options" autocomplete="off" checked value="1 year"> 1y
+            <input type="radio" name="date-options" autocomplete="off" checked value="1 year"> 1y
           </label>
-          <label class="btn date-btn" >
+          <label class="btn date-btn">
             <input type="radio" name="date-options" autocomplete="off" value="6 months"> 6m
           </label>
-          <label class="btn date-btn" >
+          <label class="btn date-btn">
             <input type="radio" name="date-options" autocomplete="off" value="1 month"> 1m
           </label>
-          <label class="btn date-btn" >
+          <label class="btn date-btn">
             <input type="radio" name="date-options" autocomplete="off" value="1 week"> 1w
           </label>
         </div>
@@ -67,17 +67,18 @@
     </div>
 
   </div>
-  <div class="p-2 bd-highlight container-fluid">
+  <div class="p-2 container-fluid">
     <div>
       <div id="chart" class="chart"></div>
     </div>
 
   </div>
+  
+</div>
+<div id="table">
+  {{tableHTML | safe}}
 </div>
 
-<div class="d-flex bd-highlight row">
-  Tables here
-</div>
 
 
 
@@ -136,12 +137,12 @@
       includeSelectAllOption: true,
       selectAllValue: 'select-all-value'
     });
-    
 
     var graphJSON = {{ linegraphJSON | safe
   }};
   Plotly.plot('chart', graphJSON, {});
   fillOptions(graphJSON);
+
   });
 
 
