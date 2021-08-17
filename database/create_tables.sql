@@ -1,8 +1,17 @@
+DROP TABLE IF EXISTS constants CASCADE;
 DROP TABLE IF EXISTS used_tickers CASCADE;
 DROP TABLE IF EXISTS daily CASCADE;
+DROP TABLE IF EXISTS exchanges CASCADE;
+DROP TABLE IF EXISTS investors CASCADE;
+DROP TABLE IF EXISTS portfolios CASCADE;
+
+/* Table defining constants */
+
+CREATE TABLE constants(
+    
+)
 
 /*Table that contains the list of tickers that are to be used in the database*/
-
 
 CREATE TABLE used_tickers(
     ticker varchar(16) PRIMARY KEY,

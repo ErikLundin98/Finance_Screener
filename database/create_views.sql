@@ -107,19 +107,27 @@ one_year AS (
 all_time AS (
     SELECT
         ticker,
-        stddev(arithmetic_return) AS AT_arit_stdev,
-        geomean(arithmetic_return) AS AT_arit_geomean,
-        stddev(logarithmic_return) AS AT_log_stdev,
-        avg(logarithmic_return) AS AT_log_aritmean,
-        (SELECT MAX(first_date) FROM used_dates AS AT_first_date)
+        stddev(arithmetic_return) AS LCT_arit_stdev,
+        geomean(arithmetic_return) AS LCT_arit_geomean,
+        stddev(logarithmic_return) AS LCT_log_stdev,
+        avg(logarithmic_return) AS LCT_log_aritmean,
+        (SELECT MAX(first_date) FROM used_dates AS LCT_first_date)
     FROM daily_returns, dates WHERE date <= dates.AT_last_date AND date >= dates.AT_first_date
     GROUP BY ticker
 )
 SELECT 
     used_tickers.ticker AS ticker,
-    ticker_returns.ONE_Y_arit_return, ticker_returns.ALL_SAME_T_arit_return, ticker_returns.ALL_T_arit_return,
-    ONE_Y_arit_stdev, ONE_Y_arit_geomean, ONE_Y_log_stdev, ONE_Y_log_aritmean,
-    AT_arit_stdev, AT_arit_geomean, AT_log_stdev, AT_log_aritmean
+    ticker_returns.ONE_Y_arit_return AS "one year arithmetic return", 
+    ticker_returns.ALL_SAME_T_arit_return AS "longest common timespan arithmetic return", 
+    ticker_returns.ALL_T_arit_return AS "all time arithmetic return",
+    ONE_Y_arit_stdev*SQRT(253) AS "(arithetic return) one year volatility", 
+    ONE_Y_arit_geomean AS "(arithetic return) one year geometric mean", 
+    ONE_Y_log_stdev*SQRT(253) AS "(logarithmic return) one year volatility", 
+    ONE_Y_log_aritmean AS "(logarithmic return) one year arithmetic mean",
+    LCT_arit_stdev*SQRT(253) AS "(arithmetic return) longest common timespan volatility", 
+    LCT_arit_geomean AS "(arithmetic return) longest common timespan geometric mean", 
+    LCT_log_stdev*SQRT(253) AS "(logarithmic return) longest common timespan volatility", 
+    LCT_log_aritmean AS "(logarithmic return) longest common timespan arithmetic mean"
     FROM used_tickers
     JOIN one_year ON used_tickers.ticker = one_year.ticker
     JOIN all_time ON one_year.ticker = all_time.ticker

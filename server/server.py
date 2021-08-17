@@ -40,7 +40,7 @@ def get_market_data_page():
             'explanation' : 'you should know this'
         },
     ]
-    prices_graphJSON = get_market_data()
+    prices_graphJSON = get_market_prices()
     return render_template('stock.html', linegraphJSON=prices_graphJSON, tickers_info=tickers_info, indicators_info=indicators_info)#, dailyreturntableJSON=today_prices_graphJSON)
 
 @app.route('/stock/select')
@@ -48,9 +48,9 @@ def get_selected_market_data():
     selected_tickers = request.args.getlist('tickers[]')
     selected_daterange = request.args.get('date-range')
 
-    return get_market_data(tickers=selected_tickers, daterange=selected_daterange)
+    return get_market_prices(tickers=selected_tickers, daterange=selected_daterange)
 
-def get_market_data(tickers=['NVDA'], daterange='1 year'):
+def get_market_prices(tickers=['NVDA'], daterange='1 year'):
     
     if not tickers:
         tickers = [""]
@@ -60,13 +60,21 @@ def get_market_data(tickers=['NVDA'], daterange='1 year'):
         'SELECT ticker, date, adjusted_close AS "adjusted close" FROM clean_daily WHERE date > CURRENT_DATE-interval \'{}\' AND ticker IN {}'.format(daterange, dm.tuple_string(tickers))
         )
     fig = px.line(prices_df, x='date', y='adjusted close', color='ticker')
-    fig.update_layout(
-        #yaxis_tickformat='.001%', 
+    fig.update_layout( 
         margin=dict(l=0, r=0, t=0, b=0))
     
     prices_graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
+    get_market_indicators(tickers)
     return prices_graphJSON
+
+def get_market_indicators(tickers=['NVDA'], indicators='*'):
+    if not tickers:
+        tickers = [""]
+    
+    indicators_df = dm.query_df(
+        'SELECT {} FROM asset_indicators WHERE ticker IN {}'.format(indicators, dm.tuple_string(tickers))
+    )
+    print(indicators_df.head(15))
 
 @app.route('/update')
 def update_db():
