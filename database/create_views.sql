@@ -1,3 +1,5 @@
+/*TODO: remove non-null values from this view*/
+DROP MATERIALIZED VIEW IF EXISTS clean_daily CASCADE;
 CREATE MATERIALIZED VIEW clean_daily AS
 SELECT 
     date,
@@ -10,6 +12,7 @@ SELECT
     )
     AS "adjusted_close"
 FROM daily
+WHERE adjusted_close <> 0
 ORDER BY date;
 
 /*Shows the latest updated dates (lazy check)*/
