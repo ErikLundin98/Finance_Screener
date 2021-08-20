@@ -50,8 +50,15 @@ def get_selected_market_data():
     selected_tickers = request.args.getlist('tickers[]')
     selected_daterange = request.args.get('date-range')
 
-    return get_market_prices(tickers=selected_tickers, daterange=selected_daterange)
-
+    prices_chart = get_market_prices(tickers=selected_tickers, daterange=selected_daterange)
+    indicators_table = get_market_indicators(tickers=selected_tickers, indicators='*')
+    data = {
+        'chart': prices_chart,
+        'table': indicators_table
+    }
+    
+    return jsonify(data)
+    
 def get_market_prices(tickers=['NVDA'], daterange='1 year'):
     
     if not tickers:

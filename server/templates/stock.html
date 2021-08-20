@@ -105,6 +105,9 @@
     }
   }
   function fillOptions(graphJSON) {
+    console.log(graphJSON);
+    console.log(graphJSON['data']);
+    console.log(graphJSON.data);
     $('#ticker-multiselect').multiselect('select',
       graphJSON.data.map(function (value) {
         console.log(value.legendgroup)
@@ -158,12 +161,13 @@
         'tickers': selectedTickers,
         'date-range': selectedDaterange
       },
-      success: function (result) {
-        console.log(result.data);
-        fillOptions(result);
+      success: function (data) {
+        console.log(data.table);
+        $('#table').empty().append(data.table);
+        parsedChart = JSON.parse(data.chart);
+        fillOptions(parsedChart);
+        Plotly.newPlot('chart', parsedChart, {});
         // Retrieve tickers supplied to plot and add them to select box
-
-        Plotly.newPlot('chart', result, {});
       }
     });
   }
