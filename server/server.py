@@ -58,7 +58,7 @@ def get_selected_market_data():
     }
     
     return jsonify(data)
-    
+
 def get_market_prices(tickers=['NVDA'], daterange='1 year'):
     
     if not tickers:
@@ -82,7 +82,9 @@ def get_market_indicators(tickers=['NVDA'], indicators='*'):
     indicators_df = dm.query_df(
         'SELECT {} FROM asset_indicators WHERE ticker IN {}'.format(indicators, dm.tuple_string(tickers))
     )
-    df_html = indicators_df.to_html()
+    percentage_formatters = { key : '{:.2%}'.format for key, value in indicators_df.dtypes.items() if value == 'float64' }
+    print(indicators_df.head())
+    df_html = indicators_df.to_html(formatters=percentage_formatters)
     return df_html
 
 @app.route('/update')
