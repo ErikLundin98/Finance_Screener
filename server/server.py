@@ -5,6 +5,8 @@ import plotly
 from plotly import express as px, graph_objects as go
 import json
 import pandas as pd
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 dm = DataManager()
@@ -111,4 +113,6 @@ def new_ticker(ticker, name):
     return(f'Ticker requested: {ticker, name}')
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    
+    load_dotenv()
+    app.run(host=os.getenv('HOST_IP'), port=os.getenv('HOST_PORT'), debug=True)
