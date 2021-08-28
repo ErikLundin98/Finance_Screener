@@ -20,7 +20,7 @@
     <div class="row">
       <select id="ticker-multiselect" multiple="multiple">
         {% for item in tickers_info %}
-        <option class="ticker-option" value="{{ item.ticker }}">{{item.ticker}} ({{item.company_name}})</option>
+        <option class="ticker-option" value="{{ item.ticker }}">{{item.ticker}} ({{item.name}})</option>
         {% endfor %}>
       </select>
     </div>

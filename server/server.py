@@ -29,9 +29,14 @@ def update():
     res.mimetype = 'text/plain'
     return res
 
+@app.route('/api/add_tickers')
+def add_tickers_to_db():
+    new_tickers = request.args.getlist('tickers[]')
+    print(new_tickers)
+
 @app.route('/stock')
 def get_market_data_page():
-    tickers_info = dm.query_df('SELECT ticker, company_name, category FROM used_tickers ORDER BY ticker ASC').to_dict('records')
+    tickers_info = dm.query_df('SELECT ticker, name, category FROM used_tickers ORDER BY ticker ASC').to_dict('records')
     indicators_info= [
         {
             'indicator' : 'one-year volatility',

@@ -65,7 +65,6 @@ def insert_rows(connection:Any, cursor:Any, table_name:str, columns:tuple, data:
     sql += ' ON CONFLICT '+do_on_conflict
     sql += ';'
     for i, row in enumerate(tqdm(data)):
-        print(row)
         try:
             cursor.execute(sql, row)
         except (Exception, psycopg2.Error) as error:

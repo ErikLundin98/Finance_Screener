@@ -31,7 +31,7 @@ class DataManager:
         Adds a ticker to the database, and populates the database with daily prices for that ticker
         '''
         if ticker not in self.get_tickers():
-            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'company_name', 'category', 'currency'), (ticker, name, category, currency))
+            dbu.insert_row(self.connection, self.cursor, 'used_tickers', ('ticker', 'name', 'category', 'currency'), (ticker, name, category, currency))
             # we also want to populate daily with data for the new ticker
             print('fetching data and adding to db')
             self.add_daily_data([ticker], self.START_DATE, datetime.date.today())

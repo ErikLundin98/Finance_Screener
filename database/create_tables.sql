@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS portfolios CASCADE;
 /*Table that contains the list of tickers that are to be used in the database*/
 CREATE TABLE used_tickers(
     ticker varchar(16) PRIMARY KEY,
-    company_name varchar(30),
+    name varchar(60),
     category varchar(20),
     currency varchar(3)
 );
