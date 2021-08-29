@@ -150,9 +150,9 @@ GROUP BY ticker;
 /* Combined asset indicators view */
 DROP VIEW IF EXISTS asset_indicators;
 CREATE VIEW asset_indicators AS
-SELECT r1y.ticker, r1y.arithmetic AS "arithmetic_1Y", rat.arithmetic AS "arithmetic_AT", rat.first_date AS "first_date_AT", rat.last_date AS "last_date_AT", -- Returns
-s1y.ari_r_stddev*SQRT(253) AS "stddev_1Y_ari", s1y.log_r_stddev*SQRT(253) AS "stddev_1Y_log", s1y.ari_r_geomean*253 AS "ari_geomean_1Y", s1y.log_r_mean*253 AS "log_mean_1y", -- 1Y stats
-sat.ari_r_stddev*SQRT(253) AS "stddev_AT_ari", sat.log_r_stddev*SQRT(253) AS "stddev_AT_log", sat.ari_r_geomean*253 AS "ari_geomean_AT", sat.log_r_mean*253 AS "log_mean_AT"-- All time stats
+SELECT r1y.ticker, r1y.arithmetic AS "arithmetic_1y", rat.arithmetic AS "arithmetic_at", rat.first_date AS "first_date_at", rat.last_date AS "last_date_at", -- Returns
+s1y.ari_r_stddev*SQRT(253) AS "stddev_1y_ari", s1y.log_r_stddev*SQRT(253) AS "stddev_1y_log", s1y.ari_r_geomean*253 AS "ari_geomean_1y", s1y.log_r_mean*253 AS "log_mean_1y", -- 1Y stats
+sat.ari_r_stddev*SQRT(253) AS "stddev_at_ari", sat.log_r_stddev*SQRT(253) AS "stddev_at_log", sat.ari_r_geomean*253 AS "ari_geomean_at", sat.log_r_mean*253 AS "log_mean_at"-- All time stats
 FROM ticker_1Y_returns AS r1y
 INNER JOIN ticker_AT_returns AS rat ON r1y.ticker = rat.ticker
 INNER JOIN ticker_1Y_stats AS s1y ON s1y.ticker = r1y.ticker

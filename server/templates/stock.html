@@ -105,12 +105,8 @@
     }
   }
   function fillOptions(graphJSON) {
-    console.log(graphJSON);
-    console.log(graphJSON['data']);
-    console.log(graphJSON.data);
     $('#ticker-multiselect').multiselect('select',
       graphJSON.data.map(function (value) {
-        console.log(value.legendgroup)
         return value.legendgroup;
       })
     );
@@ -128,7 +124,8 @@
       numberDisplayed: 1,
       buttonContainer: '<div class="btn-group"/>',
       includeSelectAllOption: true,
-      selectAllValue: 'select-all-value'
+      selectAllValue: 'select-all-value',
+      maxHeight: 200
     });
     $('#indicator-multiselect').multiselect({
       enableFiltering: true,
@@ -138,7 +135,8 @@
       numberDisplayed: 1,
       buttonContainer: '<div class="btn-group"/>',
       includeSelectAllOption: true,
-      selectAllValue: 'select-all-value'
+      selectAllValue: 'select-all-value',
+      maxHeight: 200
     });
 
     var graphJSON = {{ linegraphJSON | safe
@@ -150,19 +148,22 @@
 
 
   function select() {
-    console.log('selecting');
     var selectedTickers = $('#ticker-multiselect option:selected').map(function () {
       return this.value;
     }).get();
+    var selectedIndicators = $('#indicator-multiselect option:selected').map(function () {
+      return this.value;
+    }).get();
+
     var selectedDaterange = $('input[name="date-options"]:checked').val();
     $.getJSON({
       url: "/stock/select",
       data: {
         'tickers': selectedTickers,
-        'date-range': selectedDaterange
+        'date-range': selectedDaterange,
+        'indicators': selectedIndicators
       },
       success: function (data) {
-        console.log(data.table);
         $('#table').empty().append(data.table);
         parsedChart = JSON.parse(data.chart);
         fillOptions(parsedChart);

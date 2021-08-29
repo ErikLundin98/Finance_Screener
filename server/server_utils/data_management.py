@@ -96,7 +96,7 @@ class DataManager:
         print(start_date, end_date)
         self.add_daily_data(tickers, start_date, end_date, 
         do_on_conflict='(ticker, date) DO UPDATE SET open=EXCLUDED.open, close=EXCLUDED.close, \
-            adjusted_close=EXCLUDED.adjusted_close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume')
+            close=EXCLUDED.close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume')
         if refresh_views:
             self.data_query('CALL refresh_views();', get_output=False)
         self.connection.commit()
@@ -106,6 +106,9 @@ class DataManager:
 
     def tuple_string(self, elements):
         return '('+', '.join(f'\'{element}\'' for element in elements)+')'
+
+    def column_string(self, elements, relation_prefix=''):
+        return ', '.join(f'{relation_prefix}{element}' for element in elements)
 
     def __del__(self):
         self.cursor.close()
