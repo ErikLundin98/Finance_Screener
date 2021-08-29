@@ -32,6 +32,7 @@ WITH temp AS (
         ticker,
         adjusted_close/NULLIF(LAG(adjusted_close) OVER (PARTITION BY ticker ORDER BY date ASC), 0) as div
         FROM clean_daily
+        ORDER BY date
 )
 SELECT
     temp.date,
@@ -46,7 +47,7 @@ SELECT
     AS "logarithmic_return"
 FROM temp, used_dates
 WHERE temp.ticker = used_dates.ticker AND temp.date > used_dates.first_date
-ORDER BY DATE;
+ORDER BY date;
 
 /*Technical analysis view for all assets in database*/
 
