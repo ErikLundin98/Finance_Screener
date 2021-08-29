@@ -1,17 +1,3 @@
-CREATE OR REPLACE FUNCTION portfolio_prices_JSON(user_name VARCHAR(30))
-RETURNS TABLE(date DATE, ticker_info jsonb) 
-LANGUAGE SQL
-AS
-$$
-SELECT d.date AS date, 
-       JSONB_OBJECT_AGG(d.ticker, d.adjusted_close) as ticker_info
-FROM daily d
-WHERE d.ticker IN (SELECT ticker FROM portfolios WHERE portfolios.user_name=user_name)
-GROUP BY d.date
-ORDER BY date ASC
-$$;
-
-
 CREATE OR REPLACE FUNCTION get_portfolio_query()
 RETURNS text
 LANGUAGE plpgsql
@@ -24,7 +10,7 @@ $$
     BEGIN
         FOR temprow IN SELECT * FROM portfolios WHERE user_name='snigelnmjau'
         LOOP
-            str_query := str_query || format(', %s.adjusted_close AS %s', temprow.ticker, temprow.ticker);
+            str_query := str_query || format(', %s.close AS %s', temprow.ticker, temprow.ticker);
         END LOOP;
 
         str_query := str_query || format(' FROM clean_daily AS t1 ');
@@ -42,37 +28,37 @@ $$
 $$;
 
 
-CREATE OR REPLACE FUNCTION range_return(in_ticker TEXT, startd DATE, endd DATE, return_type TEXT)
+CREATE OR REPLACE FUNCTION range_logarithmic_return(in_ticker TEXT, startd DATE, endd DATE)
 RETURNS float8
 LANGUAGE plpgsql
 AS
 $$
 DECLARE
     ret float8;
-    closest_start DATE;
-    closest_end DATE;
 BEGIN
-    SELECT date INTO closest_start FROM clean_daily 
-    WHERE ticker = in_ticker AND date >= startd
-    ORDER BY DATE ASC LIMIT 1;
+    SELECT LN(tend.close/tstart.close) INTO ret 
+    FROM clean_daily AS tend, clean_daily AS tstart
+    WHERE tend.date = endd AND tend.ticker = in_ticker
+    AND tstart.date = startd AND tstart.ticker = in_ticker
+    LIMIT 1;
 
-    SELECT date INTO closest_end FROM clean_daily 
-    WHERE ticker = in_ticker AND date <= endd
-    ORDER BY DATE DESC LIMIT 1;
+    RETURN ret;
+END;
+$$;
 
-    IF return_type = 'log' THEN
-        SELECT LN(tend.adjusted_close/tstart.adjusted_close) INTO ret 
-        FROM clean_daily AS tend, clean_daily AS tstart
-        WHERE tend.date = closest_end AND tend.ticker = in_ticker
-        AND tstart.date = closest_start AND tstart.ticker = in_ticker
-        LIMIT 1;
-    ELSE
-        SELECT tend.adjusted_close/tstart.adjusted_close - 1 INTO ret 
-        FROM clean_daily AS tend, clean_daily AS tstart
-        WHERE tend.date = closest_end AND tend.ticker = in_ticker
-        AND tstart.date = closest_start AND tstart.ticker = in_ticker
-        LIMIT 1;
-    END IF;
+CREATE OR REPLACE FUNCTION range_arithmetic_return(in_ticker TEXT, startd DATE, endd DATE)
+RETURNS float8
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    ret float8;
+BEGIN
+    SELECT tend.close/tstart.close - 1 INTO ret 
+    FROM clean_daily AS tend, clean_daily AS tstart
+    WHERE tend.date = endd AND tend.ticker = in_ticker
+    AND tstart.date = startd AND tstart.ticker = in_ticker
+    LIMIT 1;
     
     RETURN ret;
 END;

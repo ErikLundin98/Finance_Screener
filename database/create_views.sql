@@ -5,14 +5,14 @@ SELECT
     date,
     ticker,
     COALESCE(
-        NULLIF(adjusted_close, 0),
-        NULLIF(LAG(adjusted_close, 1) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(adjusted_close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(adjusted_close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
+        NULLIF(close, 0),
+        NULLIF(LAG(close, 1) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
+        NULLIF(LAG(close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
+        NULLIF(LAG(close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
     )
-    AS "adjusted_close"
+    AS "close"
 FROM daily
-WHERE adjusted_close <> 0
+WHERE close <> 0
 ORDER BY date;
 
 /*Shows the latest updated dates (lazy check)*/
@@ -20,7 +20,7 @@ DROP MATERIALIZED VIEW IF EXISTS used_dates CASCADE;
 CREATE MATERIALIZED VIEW used_dates AS 
 SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
 FROM clean_daily 
-WHERE adjusted_close IS NOT NULL AND adjusted_close <> 0
+WHERE close IS NOT NULL AND close <> 0
 GROUP BY ticker 
 ORDER BY ticker ASC;
 
@@ -30,7 +30,7 @@ WITH temp AS (
     SELECT 
         date,
         ticker,
-        adjusted_close/NULLIF(LAG(adjusted_close) OVER (PARTITION BY ticker ORDER BY date ASC), 0) as div
+        close/NULLIF(LAG(close) OVER (PARTITION BY ticker ORDER BY date ASC), 0) as div
         FROM clean_daily
         ORDER BY date
 )
@@ -75,64 +75,90 @@ CREATE OR REPLACE AGGREGATE geomean(value float8) (
 /*---*/
 
 /*ASSET INDICATORS VIEW*/
-
-DROP MATERIALIZED VIEW IF EXISTS asset_indicators;
-CREATE MATERIALIZED VIEW asset_indicators
+DROP VIEW IF EXISTS common_dates;
+CREATE VIEW common_dates
 AS 
-WITH dates AS (
-    SELECT
-        CURRENT_DATE AS today,
-        CAST(CURRENT_DATE - interval '1 year' AS DATE) AS ONE_Y_first_date,
-        (SELECT MAX(first_date) FROM used_dates) AS AT_first_date,
-        (SELECT MIN(last_date) FROM used_dates) AS AT_last_date
-),
-ticker_returns AS (
-    SELECT
-        used_tickers.ticker AS ticker,
-        range_return(used_tickers.ticker, dates.ONE_Y_first_date, dates.today, 'arit') AS ONE_Y_arit_return,
-        range_return(used_tickers.ticker, dates.AT_first_date, dates.AT_last_date, 'arit') AS ALL_SAME_T_arit_return,
-        range_return(used_tickers.ticker, used_dates.first_date, used_dates.last_date, 'arit') AS ALL_T_arit_return
-    FROM used_tickers, dates, used_dates
-    WHERE used_tickers.ticker = used_dates.ticker
-),
-one_year AS (
-    SELECT
-        ticker,
-        stddev(arithmetic_return) AS ONE_Y_arit_stdev,
-        geomean(arithmetic_return) AS ONE_Y_arit_geomean,
-        stddev(logarithmic_return) AS ONE_Y_log_stdev,
-        avg(logarithmic_return) AS ONE_Y_log_aritmean
-    FROM daily_returns WHERE date >= CURRENT_DATE - interval '1 year'
-    GROUP BY ticker
-),
-all_time AS (
-    SELECT
-        ticker,
-        stddev(arithmetic_return) AS LCT_arit_stdev,
-        geomean(arithmetic_return) AS LCT_arit_geomean,
-        stddev(logarithmic_return) AS LCT_log_stdev,
-        avg(logarithmic_return) AS LCT_log_aritmean,
-        (SELECT MAX(first_date) FROM used_dates AS LCT_first_date)
-    FROM daily_returns, dates WHERE date <= dates.AT_last_date AND date >= dates.AT_first_date
-    GROUP BY ticker
-)
+SELECT
+    CURRENT_DATE AS today,
+    CAST(CURRENT_DATE - interval '1 year' AS DATE) AS ONE_Y_first_date,
+    (SELECT MAX(first_date) FROM used_dates) AS AT_first_date,
+    (SELECT MIN(last_date) FROM used_dates) AS AT_last_date;
+
+/* dates for 1y stats */
+DROP MATERIALIZED VIEW IF EXISTS closest_1Y_dates;
+CREATE MATERIALIZED VIEW closest_1Y_dates AS
+SELECT e.ticker, MIN(b.date) first_date, MAX(e.date) last_date FROM clean_daily e, clean_daily b
+    WHERE b.ticker = e.ticker 
+    AND e.date <= CURRENT_DATE
+    AND b.date >= CAST(CURRENT_DATE - interval '1 year' AS DATE)
+    GROUP BY e.ticker;
+/* One year returns for tickers */
+DROP MATERIALIZED VIEW IF EXISTS ticker_1Y_returns;
+CREATE MATERIALIZED VIEW ticker_1Y_returns
+AS
 SELECT 
-    used_tickers.ticker AS ticker,
-    ticker_returns.ONE_Y_arit_return AS "one year arithmetic return", 
-    ticker_returns.ALL_SAME_T_arit_return AS "longest common timespan arithmetic return", 
-    ticker_returns.ALL_T_arit_return AS "all time arithmetic return",
-    ONE_Y_arit_stdev*SQRT(253) AS "(arithetic return) one year volatility", 
-    ONE_Y_arit_geomean AS "(arithetic return) one year geometric mean", 
-    ONE_Y_log_stdev*SQRT(253) AS "(logarithmic return) one year volatility", 
-    ONE_Y_log_aritmean AS "(logarithmic return) one year arithmetic mean",
-    LCT_arit_stdev*SQRT(253) AS "(arithmetic return) longest common timespan volatility", 
-    LCT_arit_geomean AS "(arithmetic return) longest common timespan geometric mean", 
-    LCT_log_stdev*SQRT(253) AS "(logarithmic return) longest common timespan volatility", 
-    LCT_log_aritmean AS "(logarithmic return) longest common timespan arithmetic mean"
-    FROM used_tickers
-    JOIN one_year ON used_tickers.ticker = one_year.ticker
-    JOIN all_time ON one_year.ticker = all_time.ticker
-    JOIN ticker_returns ON ticker_returns.ticker = used_tickers.ticker;
+    closest_1Y_dates.ticker,
+    cd2.close/cd1.close - 1 AS arithmetic,
+    LN(cd2.close/cd1.close) AS logarithmic,
+    closest_1Y_dates.last_date,
+    closest_1Y_dates.first_date
+FROM closest_1Y_dates
+INNER JOIN clean_daily cd1 ON closest_1Y_dates.ticker = cd1.ticker AND cd1.date = closest_1Y_dates.first_date
+INNER JOIN clean_daily cd2 on closest_1Y_dates.ticker = cd2.ticker AND cd2.date = closest_1Y_dates.last_date;
+
+/* All time returns for tickers */
+DROP MATERIALIZED VIEW IF EXISTS ticker_AT_returns;
+CREATE MATERIALIZED VIEW ticker_AT_returns
+AS
+SELECT 
+    used_dates.ticker,
+    cd2.close/cd1.close - 1 AS arithmetic,
+    LN(cd2.close/cd1.close) AS logarithmic,
+    used_dates.last_date,
+    used_dates.first_date
+FROM used_dates
+INNER JOIN clean_daily cd1 ON used_dates.ticker = cd1.ticker AND cd1.date = used_dates.first_date
+INNER JOIN clean_daily cd2 on used_dates.ticker = cd2.ticker AND cd2.date = used_dates.last_date;
+
+/* One-year statistics for tickers */
+DROP MATERIALIZED VIEW IF EXISTS ticker_1Y_stats;
+CREATE MATERIALIZED VIEW ticker_1Y_stats
+AS 
+SELECT
+    ticker,
+    stddev(arithmetic_return) AS ari_r_stddev,
+    geomean(arithmetic_return) AS ari_r_geomean,
+    stddev(logarithmic_return) AS log_r_stddev,
+    avg(logarithmic_return) AS log_r_mean
+FROM daily_returns WHERE date >= CURRENT_DATE - interval '1 year'
+GROUP BY ticker;
+
+/* All time statistics for tickers */
+DROP MATERIALIZED VIEW IF EXISTS ticker_AT_stats;
+CREATE MATERIALIZED VIEW ticker_AT_stats
+AS 
+SELECT
+    ticker,
+    stddev(arithmetic_return) AS ari_r_stddev,
+    geomean(arithmetic_return) AS ari_r_geomean,
+    stddev(logarithmic_return) AS log_r_stddev,
+    avg(logarithmic_return) AS log_r_mean
+FROM daily_returns
+GROUP BY ticker;
+
+
+/* Combined asset indicators view */
+DROP VIEW IF EXISTS asset_indicators;
+CREATE VIEW asset_indicators AS
+SELECT r1y.ticker, r1y.arithmetic AS "arithmetic_1Y", rat.arithmetic AS "arithmetic_AT", rat.first_date AS "first_date_AT", rat.last_date AS "last_date_AT", -- Returns
+s1y.ari_r_stddev*SQRT(253) AS "stddev_1Y_ari", s1y.log_r_stddev*SQRT(253) AS "stddev_1Y_log", s1y.ari_r_geomean*253 AS "ari_geomean_1Y", s1y.log_r_mean*253 AS "log_mean_1y", -- 1Y stats
+sat.ari_r_stddev*SQRT(253) AS "stddev_AT_ari", sat.log_r_stddev*SQRT(253) AS "stddev_AT_log", sat.ari_r_geomean*253 AS "ari_geomean_AT", sat.log_r_mean*253 AS "log_mean_AT"-- All time stats
+FROM ticker_1Y_returns AS r1y
+INNER JOIN ticker_AT_returns AS rat ON r1y.ticker = rat.ticker
+INNER JOIN ticker_1Y_stats AS s1y ON s1y.ticker = r1y.ticker
+INNER JOIN ticker_AT_stats AS sat ON sat.ticker = r1y.ticker;
+
+
 
 /* PROCEDURE to refresh views*/
 
@@ -143,7 +169,10 @@ $$
 REFRESH MATERIALIZED VIEW used_dates;
 REFRESH MATERIALIZED VIEW clean_daily;
 REFRESH MATERIALIZED VIEW daily_returns;
+REFRESH MATERIALIZED VIEW closest_1Y_dates;
+REFRESH MATERIALIZED VIEW ticker_1Y_returns;
+REFRESH MATERIALIZED VIEW ticker_AT_returns;
+REFRESH MATERIALIZED VIEW ticker_1Y_stats;
+REFRESH MATERIALIZED VIEW ticker_AT_stats;
 REFRESH MATERIALIZED VIEW asset_indicators;
 $$;
-
-CALL refresh_views();
