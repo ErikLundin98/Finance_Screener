@@ -20,3 +20,8 @@
     background-color: green;
     border-color: darkgreen; /*set the color you want here*/
 }
+
+#selected-tickers-badges {
+    overflow-y: scroll;
+    max-height: 200px;
+}
