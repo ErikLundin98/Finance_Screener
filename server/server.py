@@ -85,7 +85,7 @@ def get_market_indicators(tickers=['NVDA'], indicators='*'):
     print(indicators_query)
     indicators_df = dm.query_df(indicators_query)
     percentage_formatters = { key : '{:.2%}'.format for key, value in indicators_df.dtypes.items() if value == 'float64' }
-    df_html = indicators_df.to_html(formatters=percentage_formatters)
+    df_html = indicators_df.to_html(classes=["table-bordered", "table-striped", "table-hover"], formatters=percentage_formatters)
     return df_html
 
 @app.route('/update')
