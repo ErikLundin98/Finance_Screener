@@ -10,9 +10,16 @@ SELECT
         NULLIF(LAG(close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
         NULLIF(LAG(close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
     )
-    AS "close"
+    AS "close",
+    COALESCE(
+        NULLIF(adjusted_close, 0),
+        NULLIF(LAG(adjusted_close, 1) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
+        NULLIF(LAG(adjusted_close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
+        NULLIF(LAG(adjusted_close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
+    )
+    AS "adjusted_close"
 FROM daily
-WHERE close <> 0
+WHERE adjusted_close <> 0
 ORDER BY date;
 
 /*Shows the latest updated dates (lazy check)*/
@@ -20,7 +27,7 @@ DROP MATERIALIZED VIEW IF EXISTS used_dates CASCADE;
 CREATE MATERIALIZED VIEW used_dates AS 
 SELECT ticker, first(date, date) as "first_date", last(date, date) AS "last_date" 
 FROM clean_daily 
-WHERE close IS NOT NULL AND close <> 0
+WHERE adjusted_close IS NOT NULL AND adjusted_close <> 0
 GROUP BY ticker 
 ORDER BY ticker ASC;
 
@@ -30,7 +37,7 @@ WITH temp AS (
     SELECT 
         date,
         ticker,
-        close/NULLIF(LAG(close) OVER (PARTITION BY ticker ORDER BY date ASC), 0) as div
+        adjusted_close/NULLIF(LAG(adjusted_close) OVER (PARTITION BY ticker ORDER BY date ASC), 0) as div
         FROM clean_daily
         ORDER BY date
 )
@@ -98,8 +105,8 @@ CREATE MATERIALIZED VIEW ticker_1Y_returns
 AS
 SELECT 
     closest_1Y_dates.ticker,
-    cd2.close/cd1.close - 1 AS arithmetic,
-    LN(cd2.close/cd1.close) AS logarithmic,
+    cd2.adjusted_close/cd1.adjusted_close - 1 AS arithmetic,
+    LN(cd2.adjusted_close/cd1.adjusted_close) AS logarithmic,
     closest_1Y_dates.last_date,
     closest_1Y_dates.first_date
 FROM closest_1Y_dates
@@ -112,8 +119,8 @@ CREATE MATERIALIZED VIEW ticker_AT_returns
 AS
 SELECT 
     used_dates.ticker,
-    cd2.close/cd1.close - 1 AS arithmetic,
-    LN(cd2.close/cd1.close) AS logarithmic,
+    cd2.adjusted_close/cd1.adjusted_close - 1 AS arithmetic,
+    LN(cd2.adjusted_close/cd1.adjusted_close) AS logarithmic,
     used_dates.last_date,
     used_dates.first_date
 FROM used_dates
@@ -174,5 +181,4 @@ REFRESH MATERIALIZED VIEW ticker_1Y_returns;
 REFRESH MATERIALIZED VIEW ticker_AT_returns;
 REFRESH MATERIALIZED VIEW ticker_1Y_stats;
 REFRESH MATERIALIZED VIEW ticker_AT_stats;
-REFRESH MATERIALIZED VIEW asset_indicators;
 $$;

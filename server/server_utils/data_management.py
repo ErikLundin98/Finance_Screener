@@ -6,6 +6,7 @@ import os
 import datetime
 import pandas as pd
 import pandas.io.sql as pdsqlio
+from collections import defaultdict
 
 class DataManager:
     '''
@@ -86,18 +87,27 @@ class DataManager:
                         data=daily_data, 
                         do_on_conflict=do_on_conflict
                         )
+        print('rows inserted')
         self.connection.commit()
 
     def add_missing_daily_data(self, refresh_views=True):
         tickers_and_dates = self.data_query('SELECT ticker, last_date FROM used_dates;')
         tickers, dates = zip(*tickers_and_dates) # unpack into two lists
-        start_date = min(dates)
         end_date = datetime.date.today() + datetime.timedelta(days=2)
-        print(start_date, end_date)
-        self.add_daily_data(tickers, start_date, end_date, 
-        do_on_conflict='(ticker, date) DO UPDATE SET open=EXCLUDED.open, close=EXCLUDED.close, \
-            close=EXCLUDED.close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume')
+        # group tickers requiring the same amount of new days worth of data
+        d = {}
+        for i, date in enumerate(dates):
+            d.setdefault(date, []).append(i)
+
+        for start_date, ticker_indices in d.items():
+            same_date_tickers = [tickers[i] for i in ticker_indices] 
+            print(same_date_tickers, start_date)
+            self.add_daily_data(same_date_tickers, start_date, end_date, 
+            do_on_conflict='(ticker, date) DO UPDATE SET open=EXCLUDED.open, close=EXCLUDED.close, \
+                adjusted_close=EXCLUDED.adjusted_close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume')
+        
         if refresh_views:
+            print('refreshing views')
             self.data_query('CALL refresh_views();', get_output=False)
         self.connection.commit()
 

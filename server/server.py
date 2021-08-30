@@ -90,7 +90,7 @@ def get_market_indicators(tickers=['NVDA'], indicators='*'):
 
 @app.route('/update')
 def update_db():
-    dm.add_missing_daily_data()
+    dm.add_missing_daily_data(refresh_views=True)
     print('updated data!')
     return 200
 

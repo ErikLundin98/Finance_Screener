@@ -33,7 +33,7 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
     processed_df.fillna(0, inplace=True) # replace NA:s with 0's
     colnames = list(processed_df.columns)
     colnames = [colname.lower() for colname in colnames] # colnames to lower case
-    colnames[colnames.index('close')] = 'close'
+    colnames[colnames.index('adj close')] = 'adjusted_close'
     processed_df.columns = colnames
     processed_df.sort_values(by='date', inplace=True) # sort by date
     processed_df['date'] = processed_df['date'].apply(lambda x : x.date())
