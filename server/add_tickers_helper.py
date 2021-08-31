@@ -1,54 +1,28 @@
 from server_utils.data_management import DataManager
 import pandas as pd
 import os
+import time
+
 
 # filepath = os.path.join(os.getcwd(), 'misc/tickers.csv')
 # print(filepath)
 # df = pd.read_csv(os.path.join(os.getcwd(), 'server', 'misc', 'tickers.csv'), delimiter=';')
 # print(df.head())
 
+
+
 dm = DataManager()
+dm.add_missing_daily_data(safe_mode=True)
+# ticker_batch_size = 1
+# all_tickers = dm.get_tickers()
+# ticker_groups = [all_tickers[i:min(len(all_tickers), i+ticker_batch_size)] for i in range(0, len(all_tickers), ticker_batch_size)] # groups of 
 
-# cryptos = [
-#     {
-#         'ticker': 'BTC-USD',
-#         'name': 'Bitcoin',
-#         'category': 'cryptocurrency',
-#         'currency': 'USD'
-#     },
-#     {
-#         'ticker': 'ETH-USD',
-#         'name': 'Ethereum',
-#         'category': 'cryptocurrency',
-#         'currency': 'USD'
-#     },
-#     {
-#         'ticker': 'ADA-USD',
-#         'name': 'Cardano',
-#         'category': 'cryptocurrency',
-#         'currency': 'USD'
-#     },
-#     {
-#         'ticker': 'DOT1-USD',
-#         'name': 'Polkadot',
-#         'category': 'cryptocurrency',
-#         'currency': 'USD'
-#     },
-#     {
-#         'ticker': 'BNB-USD',
-#         'name': 'BinanceCoin',
-#         'category': 'cryptocurrency',
-#         'currency': 'USD'
-#     },
-#     {
-#         'ticker': 'SOL1-USD',
-#         'name': 'Solana',
-#         'category': 'cryptocurrency',
-#         'currency': 'USD'
-#     },
-# ]
-# for d in cryptos:
-#     dm.add_ticker(d['ticker'], d['name'], d['category'], d['currency'], refresh_views=False)
-
-#dm.add_daily_data(['SBB-B.ST','BTC-USD','ETH-USD','ADA-USD'], '2000-01-01', '2020-08-30')
-dm.add_daily_data(['ADA-USD'], '2000-01-01', '2020-08-30')
+# time_to_sleep = 1
+# n_groups = len(ticker_groups)
+# print(f'expected time: > {time_to_sleep*n_groups} seconds')
+# for i, group in enumerate(ticker_groups):
+    
+#     print(f'{i}/{n_groups-1}')
+#     dm.add_daily_data(group, '2021-08-26', '2021-09-01', do_on_conflict='(ticker, date) DO UPDATE SET open=EXCLUDED.open, close=EXCLUDED.close, \
+#                     adjusted_close=EXCLUDED.adjusted_close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume')
+#     time.sleep(time_to_sleep)

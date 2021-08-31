@@ -4,20 +4,8 @@ CREATE MATERIALIZED VIEW clean_daily AS
 SELECT 
     date,
     ticker,
-    COALESCE(
-        NULLIF(close, 0),
-        NULLIF(LAG(close, 1) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
-    )
-    AS "close",
-    COALESCE(
-        NULLIF(adjusted_close, 0),
-        NULLIF(LAG(adjusted_close, 1) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(adjusted_close, 2) OVER (PARTITION BY ticker ORDER BY date ASC), 0),
-        NULLIF(LAG(adjusted_close, 3) OVER (PARTITION BY ticker ORDER BY date ASC), 0)
-    )
-    AS "adjusted_close"
+    close,
+    adjusted_close
 FROM daily
 WHERE adjusted_close <> 0
 ORDER BY date;
@@ -127,6 +115,7 @@ FROM used_dates
 INNER JOIN clean_daily cd1 ON used_dates.ticker = cd1.ticker AND cd1.date = used_dates.first_date
 INNER JOIN clean_daily cd2 on used_dates.ticker = cd2.ticker AND cd2.date = used_dates.last_date;
 
+
 /* One-year statistics for tickers */
 DROP MATERIALIZED VIEW IF EXISTS ticker_1Y_stats;
 CREATE MATERIALIZED VIEW ticker_1Y_stats
@@ -153,17 +142,30 @@ SELECT
 FROM daily_returns
 GROUP BY ticker;
 
+DROP MATERIALIZED VIEW IF EXISTS ticker_1D_returns;
+CREATE MATERIALIZED VIEW ticker_1D_returns
+AS
+SELECT 
+    ticker,
+    date,
+    arithmetic_return,
+    logarithmic_return
+FROM daily_returns
+ORDER BY date DESC, ticker LIMIT (SELECT COUNT(*) FROM used_tickers);
 
 /* Combined asset indicators view */
 DROP VIEW IF EXISTS asset_indicators;
 CREATE VIEW asset_indicators AS
-SELECT r1y.ticker, r1y.arithmetic AS "arithmetic_1y", rat.arithmetic AS "arithmetic_at", rat.first_date AS "first_date_at", rat.last_date AS "last_date_at", -- Returns
+SELECT r1y.ticker, 
+t1d.arithmetic_return AS "last_days_return",
+r1y.arithmetic AS "arithmetic_1y", rat.arithmetic AS "arithmetic_at", rat.first_date AS "first_date_at", rat.last_date AS "last_date_at", -- Returns
 s1y.ari_r_stddev*SQRT(253) AS "stddev_1y_ari", s1y.log_r_stddev*SQRT(253) AS "stddev_1y_log", s1y.ari_r_geomean*253 AS "ari_geomean_1y", s1y.log_r_mean*253 AS "log_mean_1y", -- 1Y stats
 sat.ari_r_stddev*SQRT(253) AS "stddev_at_ari", sat.log_r_stddev*SQRT(253) AS "stddev_at_log", sat.ari_r_geomean*253 AS "ari_geomean_at", sat.log_r_mean*253 AS "log_mean_at"-- All time stats
-FROM ticker_1Y_returns AS r1y
-INNER JOIN ticker_AT_returns AS rat ON r1y.ticker = rat.ticker
-INNER JOIN ticker_1Y_stats AS s1y ON s1y.ticker = r1y.ticker
-INNER JOIN ticker_AT_stats AS sat ON sat.ticker = r1y.ticker;
+FROM ticker_1y_returns AS r1y
+INNER JOIN ticker_1d_returns AS t1d ON t1d.ticker = r1y.ticker
+INNER JOIN ticker_at_returns AS rat ON r1y.ticker = rat.ticker
+INNER JOIN ticker_1y_stats AS s1y ON s1y.ticker = r1y.ticker
+INNER JOIN ticker_at_stats AS sat ON sat.ticker = r1y.ticker;
 
 
 
@@ -173,12 +175,13 @@ CREATE OR REPLACE PROCEDURE refresh_views()
 LANGUAGE SQL
 AS
 $$
-REFRESH MATERIALIZED VIEW used_dates;
 REFRESH MATERIALIZED VIEW clean_daily;
+REFRESH MATERIALIZED VIEW used_dates;
 REFRESH MATERIALIZED VIEW daily_returns;
 REFRESH MATERIALIZED VIEW closest_1Y_dates;
 REFRESH MATERIALIZED VIEW ticker_1Y_returns;
 REFRESH MATERIALIZED VIEW ticker_AT_returns;
+REFRESH MATERIALIZED VIEW ticker_1D_returns;
 REFRESH MATERIALIZED VIEW ticker_1Y_stats;
 REFRESH MATERIALIZED VIEW ticker_AT_stats;
 $$;

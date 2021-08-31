@@ -104,7 +104,7 @@ def test():
     fig = px.bar(df, x="Fruit", y="Amount", color="City",    barmode="group")
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return render_template('test.html', graphJSON=graphJSON)
-
+    
 @app.route('/post/ticker/<string:ticker>,<string:name>')
 def new_ticker(ticker, name):
     

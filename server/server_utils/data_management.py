@@ -7,6 +7,8 @@ import datetime
 import pandas as pd
 import pandas.io.sql as pdsqlio
 from collections import defaultdict
+import time
+from tqdm import tqdm
 
 class DataManager:
     '''
@@ -74,11 +76,11 @@ class DataManager:
         '''
         return [tuple[0] for tuple in self.data_query('SELECT ticker FROM used_tickers;')]
 
-    def add_daily_data(self, tickers:list, start_date, end_date, do_on_conflict='DO NOTHING'):
+    def add_daily_data(self, tickers:list, start_date, end_date, do_on_conflict='DO NOTHING', proxy=None, supress_output=True):
         '''
         Add daily data for a specific list of tickers and a start and end date
         '''
-        daily_data, colnames = mdata.get_daily_data_from_tickers(tickers, start_date, end_date)
+        daily_data, colnames = mdata.get_daily_data_from_tickers(tickers, start_date, end_date, proxy=proxy, supress_output=supress_output)
 
         dbu.insert_rows(connection=self.connection, 
                         cursor=self.cursor, 
@@ -90,26 +92,34 @@ class DataManager:
         print('rows inserted')
         self.connection.commit()
 
-    def add_missing_daily_data(self, refresh_views=True):
+    def add_missing_daily_data(self, refresh_views=True, safe_mode=True):
         tickers_and_dates = self.data_query('SELECT ticker, last_date FROM used_dates;')
         tickers, dates = zip(*tickers_and_dates) # unpack into two lists
         end_date = datetime.date.today() + datetime.timedelta(days=2)
+        do_on_conflict = '(ticker, date) DO UPDATE SET open=EXCLUDED.open, close=EXCLUDED.close, \
+                    adjusted_close=EXCLUDED.adjusted_close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume'
         # group tickers requiring the same amount of new days worth of data
-        d = {}
-        for i, date in enumerate(dates):
-            d.setdefault(date, []).append(i)
+        if not safe_mode:
+            
+            for i, date in enumerate(dates):
+                d.setdefault(date, []).append(i)
 
-        for start_date, ticker_indices in d.items():
-            same_date_tickers = [tickers[i] for i in ticker_indices] 
-            print(same_date_tickers, start_date)
-            self.add_daily_data(same_date_tickers, start_date, end_date, 
-            do_on_conflict='(ticker, date) DO UPDATE SET open=EXCLUDED.open, close=EXCLUDED.close, \
-                adjusted_close=EXCLUDED.adjusted_close, high=EXCLUDED.high, low=EXCLUDED.low, volume=EXCLUDED.volume')
+            for start_date, ticker_indices in d.items():
+                same_date_tickers = [tickers[i] for i in ticker_indices] 
+                print(same_date_tickers, start_date)
+                self.add_daily_data(same_date_tickers, start_date, end_date, do_on_conflict=do_on_conflict)
+        else:
+            for ticker, start_date in zip(tickers, dates):
+                print(ticker, start_date)
+                self.add_daily_data([ticker], start_date, end_date, do_on_conflict=do_on_conflict, supress_output=True)
+                time.sleep(1)
+        
         
         if refresh_views:
             print('refreshing views')
             self.data_query('CALL refresh_views();', get_output=False)
         self.connection.commit()
+
 
     def query_df(self, query:str) -> pd.DataFrame:
         return pdsqlio.read_sql_query(query, self.connection)

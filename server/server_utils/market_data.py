@@ -3,7 +3,7 @@ from requests.api import get
 import yfinance as yf
 import pandas as pd
 
-def get_daily_data_from_tickers(tickers:list, start:str, end:str):
+def get_daily_data_from_tickers(tickers:list, start:str, end:str, proxy=None, supress_output=True):
     '''
     Uses yfinance to fetch data for a list of tickers for a specified period,
      processes it into a dataframe sorted by date
@@ -12,7 +12,9 @@ def get_daily_data_from_tickers(tickers:list, start:str, end:str):
         tickers = ' '.join(tickers),
         start=start,
         end=end,
-        group_by='ticker'
+        group_by='ticker',
+        proxy=proxy,
+        progress=supress_output
     )
     # returns a multi-indexed pandas dataframe that needs to be processed!
     if len(tickers) > 1:
