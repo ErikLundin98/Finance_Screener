@@ -1,5 +1,4 @@
 from flask import Flask, request, render_template, jsonify, make_response
-from flask_login import LoginManager
 from server_utils.data_management import DataManager
 import plotly
 from plotly import express as px, graph_objects as go
@@ -10,8 +9,7 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 dm = DataManager()
-#lm = LoginManager()
-#lm.init_app(app)
+
 
 @app.route('/')
 def index():
@@ -34,7 +32,7 @@ def add_tickers_to_db():
     new_tickers = request.args.getlist('tickers[]')
     print(new_tickers)
 
-@app.route('/stock')
+@app.route('/explore')
 def get_market_data_page():
     tickers_info = dm.query_df('SELECT ticker, name, category FROM used_tickers ORDER BY ticker ASC').to_dict('records')
     indicators = dm.query_df('SELECT * FROM asset_indicators LIMIT 0').columns
@@ -43,9 +41,9 @@ def get_market_data_page():
     prices_graphJSON = get_market_prices()
     indicators_table_html = get_market_indicators()
     
-    return render_template('stock.html', linegraphJSON=prices_graphJSON, tickers_info=tickers_info, indicators_info=indicators_info, tableHTML=indicators_table_html)
+    return render_template('explore.html', linegraphJSON=prices_graphJSON, tickers_info=tickers_info, indicators_info=indicators_info, tableHTML=indicators_table_html)
 
-@app.route('/stock/select')
+@app.route('/explore/select')
 def get_selected_market_data():
     selected_tickers = request.args.getlist('tickers[]')
     selected_daterange = request.args.get('date-range')

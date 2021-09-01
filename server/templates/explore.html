@@ -1,7 +1,7 @@
 {% extends "index.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/stock.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/explore.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/bootstrap-multiselect-min.css') }}">
 {% endblock %}
 
@@ -160,7 +160,7 @@
 
     var selectedDaterange = $('input[name="date-options"]:checked').val();
     $.getJSON({
-      url: "/stock/select",
+      url: "/explore/select",
       data: {
         'tickers': selectedTickers,
         'date-range': selectedDaterange,
