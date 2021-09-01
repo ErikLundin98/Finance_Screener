@@ -33,3 +33,15 @@
 .btn-group-toggle {
     flex-wrap: wrap;
 }
+
+#table {
+    max-width: 100%;
+    width: 100%;
+}
+
+/*
+table.dataTable td {
+}
+table.dataTable tr.dtrg-level-0 td {
+}
+*/

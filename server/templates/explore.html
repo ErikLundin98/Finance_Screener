@@ -118,6 +118,12 @@
   $("#ticker-multiselect").change(function () {
     reloadBadges();
   });
+  function refreshDataTable() {
+    $('.dataframe').DataTable({
+      paging: false,
+      scrollX: 400
+    });
+  }
   $(document).ready(function () {
     $('#ticker-multiselect').multiselect({
       enableFiltering: true,
@@ -142,40 +148,45 @@
       maxHeight: 200
     });
 
-    var graphJSON = {{ linegraphJSON | safe
-  }};
+  var graphJSON = {{ linegraphJSON | safe}};
+  var indicators = {{ indicators_info | safe}};
   Plotly.plot('chart', graphJSON, {});
   fillOptions(graphJSON);
-  $('.dataframe').DataTable();
+
+  $('#indicator-multiselect').multiselect('select',
+      indicators.map(function (value) {
+            return value.indicator;
+      })
+  );
+    
+  refreshDataTable();
+});
+function select() {
+  var selectedTickers = $('#ticker-multiselect option:selected').map(function () {
+    return this.value;
+  }).get();
+  var selectedIndicators = $('#indicator-multiselect option:selected').map(function () {
+    return this.value;
+  }).get();
+
+  var selectedDaterange = $('input[name="date-options"]:checked').val();
+  $.getJSON({
+    url: "/explore/select",
+    data: {
+      'tickers': selectedTickers,
+      'date-range': selectedDaterange,
+      'indicators': selectedIndicators
+    },
+    success: function (data) {
+      $('#table').empty().append(data.table);
+      refreshDataTable();
+      parsedChart = JSON.parse(data.chart);
+      fillOptions(parsedChart);
+      Plotly.newPlot('chart', parsedChart, {});
+      // Retrieve tickers supplied to plot and add them to select box
+    }
   });
-
-
-  function select() {
-    var selectedTickers = $('#ticker-multiselect option:selected').map(function () {
-      return this.value;
-    }).get();
-    var selectedIndicators = $('#indicator-multiselect option:selected').map(function () {
-      return this.value;
-    }).get();
-
-    var selectedDaterange = $('input[name="date-options"]:checked').val();
-    $.getJSON({
-      url: "/explore/select",
-      data: {
-        'tickers': selectedTickers,
-        'date-range': selectedDaterange,
-        'indicators': selectedIndicators
-      },
-      success: function (data) {
-        $('#table').empty().append(data.table);
-        $('.dataframe').DataTable();
-        parsedChart = JSON.parse(data.chart);
-        fillOptions(parsedChart);
-        Plotly.newPlot('chart', parsedChart, {});
-        // Retrieve tickers supplied to plot and add them to select box
-      }
-    });
-  }
+}
 
 </script>
 {% endblock %}
