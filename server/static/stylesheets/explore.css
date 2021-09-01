@@ -25,3 +25,11 @@
     overflow-y: scroll;
     max-height: 200px;
 }
+
+.row {
+    padding-bottom: 5px;
+}
+
+.btn-group-toggle {
+    flex-wrap: wrap;
+}
