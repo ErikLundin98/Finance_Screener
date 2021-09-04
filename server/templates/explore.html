@@ -148,8 +148,8 @@
       maxHeight: 200
     });
 
-  var graphJSON = {{ linegraphJSON | safe}};
-  var indicators = {{ indicators_info | safe}};
+  var graphJSON = {{ linegraphJSON | safe }};
+  var indicators = {{ indicators_info | safe }};
   Plotly.plot('chart', graphJSON, {});
   fillOptions(graphJSON);
 

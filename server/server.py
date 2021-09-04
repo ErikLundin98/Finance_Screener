@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 
-try:
-    dm = DataManager()
-except Exception as e:
-    print('There was an error while instantiating the DataManager object:', e)
+
+dm = DataManager()
+
+    
 
 
 @app.route('/')
@@ -95,6 +95,10 @@ def update_db():
     dm.add_missing_daily_data(refresh_views=True)
     print('updated data!')
     return 200
+
+@app.route('/portfolio')
+def portfolio():
+    return render_template('portfolio.html')
 
 @app.route('/test')
 def test():
