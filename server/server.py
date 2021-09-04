@@ -8,7 +8,11 @@ import os
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-dm = DataManager()
+
+try:
+    dm = DataManager()
+except Exception as e:
+    print('There was an error while instantiating the DataManager object:', e)
 
 
 @app.route('/')

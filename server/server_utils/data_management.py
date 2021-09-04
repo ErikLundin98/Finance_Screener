@@ -23,11 +23,13 @@ class DataManager:
         self.DATABASE_NAME = os.getenv('DATABASE_NAME')
         self.START_DATE = datetime.datetime.strptime(os.getenv('START_DATE'), '%Y-%m-%d')
 
-
-        self.cursor, self.connection = dbu.get_connectors(host=self.SQL_HOST, 
-                                                            user=self.SQL_UNAME, 
-                                                            password=self.SQL_PASSWORD, 
-                                                            database=self.DATABASE_NAME)
+        try:
+            self.cursor, self.connection = dbu.get_connectors(host=self.SQL_HOST, 
+                                                                user=self.SQL_UNAME, 
+                                                                password=self.SQL_PASSWORD, 
+                                                                database=self.DATABASE_NAME)
+        except Exception as e:
+            print('There was an error while instantiating the DataManager object:', e)
 
     def add_ticker(self, ticker:str, name:str, category:str = 'stock', currency:str = 'USD', refresh_views:bool = True):
         '''
